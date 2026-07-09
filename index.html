@@ -249,7 +249,7 @@ nav{
       <button id="miniViz" aria-label="待ち受け表示を開く"><canvas id="miniC"></canvas></button>
     </div>
     <div id="nowTitle">タップして、あなたのBGMを始める</div>
-    <div style="text-align:center;font-size:10px;letter-spacing:2px;color:var(--dim);margin-top:2px">WMB v3.1</div>
+    <div style="text-align:center;font-size:10px;letter-spacing:2px;color:var(--dim);margin-top:2px">WMB v3.2</div>
     <div id="nowSub">世界には、まだあなたのBGMがない</div>
 
     <div class="seg" id="srcSeg">
@@ -2745,7 +2745,14 @@ var qrcode = function() {
 
 </script>
 <script>
-/* ================= WMB Prototype v3.1 =================
+/* ================= WMB Prototype v3.2 =================
+   v3.2「バナーの行儀」:
+   - 更新バナーに✕を追加。✕（または更新タップ）でその
+     バージョンをスヌーズ登録し、二度と表示しない（永続）。
+     次のバージョンが出たときだけ再登場する。
+   - 30分ごとの再チェック廃止→ 起動時+「1時間以上ぶりに
+     画面へ戻ってきた時」のみ確認（音楽を流しっぱなしの
+     セッションに割り込まない）。
    v3.1（実地スクリーンショットからの即応修正）:
    - 体調系の感情を追加: 頭痛/痛い/気持ち悪/風邪/めまい等
      →「不調」として瞑想/Ambient/雨宿りへ。音数を減らし
@@ -3509,16 +3516,23 @@ async function checkUpdate(){
     txt=await r.text();
     const m=txt.match(/>WMB v([\d.]+)</);
     if(m&&m[1]!==WMB_VER&&parseFloat(m[1])>parseFloat(WMB_VER)){
+      if(m[1]===S.updSnooze)return;                 /* ✕で消した版は再表示しない */
       if(document.getElementById('updBar'))return;
       const b=document.createElement('div'); b.id='updBar';
-      b.innerHTML=`✨ 新しいバージョン v${m[1]} があります <button id="updGo">今すぐ更新</button>`;
+      b.innerHTML=`✨ v${m[1]} があります <span style="display:flex;gap:8px;flex:none"><button id="updGo">更新</button><button id="updX" aria-label="閉じる" style="background:transparent;color:#0a0d1a;border:1px solid rgba(10,13,26,.4)">✕</button></span>`;
       document.body.appendChild(b);
-      document.getElementById('updGo').onclick=()=>location.replace(location.pathname+'?v='+Date.now());
+      document.getElementById('updGo').onclick=()=>{ S.updSnooze=m[1]; save(); location.replace(location.pathname+'?v='+Date.now()); };
+      document.getElementById('updX').onclick=()=>{ S.updSnooze=m[1]; save(); b.remove(); };  /* この版はもう聞かない */
     }
   }catch(e){}
 }
 setTimeout(checkUpdate,2500);
-setInterval(checkUpdate,30*60*1000);   /* 開きっぱなしでも30分ごとに確認 */
+let lastUpdCheck=Date.now();
+if(typeof document!=='undefined'&&document.addEventListener)document.addEventListener('visibilitychange',()=>{   /* 開き直した時だけ、1時間以上ぶりなら確認 */
+  if(document.visibilityState==='visible'&&Date.now()-lastUpdCheck>3600000){
+    lastUpdCheck=Date.now(); checkUpdate();
+  }
+});
 
 const DEFLEAD_ALT={'Jazz House':['sax','trumpet'],'Acid Jazz':['organ','sax'],'Neo Soul':['epiano','sax'],'Nu Disco':['epiano','eguitar'],'Bossa Nova':['flute','guitar'],'Soul':['sax','epiano'],'Country':['guitar','eguitar'],'R&B':['epiano','sax'],'City Pop':['epiano','guitar'],'Reggae':['organ','eguitar'],'Latin':['trumpet','sax'],'Hip-Hop':['epiano','organ'],'Blues':['eguitar','organ'],'Ska':['trumpet','sax'],'Disco':['epiano','eguitar'],'Funk':['eguitar','epiano'],'J-Pop':['piano','epiano']};
 function personalizeProf(p,key){
@@ -3546,14 +3560,14 @@ function prof(k){ const key=k||curKey();
 function isTuned(key){ const p=S.profiles[key]; if(!p)return false; return JSON.stringify(p,stripNotes)!==(p._base||DEFPROF_JSON); }
 function styleName(){ return S.src==='genre'?S.genre:S.mode; }
 
-async function save(){ try{ if(window.storage) await window.storage.set('wmb:v2', JSON.stringify({v:26, aiKey:S.aiKey||'', aiModel:S.aiModel||'sonnet', profile:S.profile, profiles:S.profiles, mode:S.mode, genre:S.genre, src:S.src, samples:S.samples!==false})); }catch(e){} }
+async function save(){ try{ if(window.storage) await window.storage.set('wmb:v2', JSON.stringify({v:26, updSnooze:S.updSnooze||'', aiKey:S.aiKey||'', aiModel:S.aiModel||'sonnet', profile:S.profile, profiles:S.profiles, mode:S.mode, genre:S.genre, src:S.src, samples:S.samples!==false})); }catch(e){} }
 async function load(){ try{ if(window.storage){ const r=await window.storage.get('wmb:v2'); if(r&&r.value){ const d=JSON.parse(r.value);
       if((d.v||0)<26){ /* 旧バージョンの保存状態（シンセ指定等）を破棄 */
         S.profiles={}; S.src='genre'; S.genre='Jazz';
         Object.assign(S.profile,{chapters:(d.profile&&d.profile.chapters)||[]});
         setTimeout(()=>toast('新バージョンのため音の設定を初期化しました（章は保持）'),800);
       } else {
-      Object.assign(S.profile,d.profile||{}); S.profiles=d.profiles||{}; S.mode=d.mode||S.mode; S.genre=d.genre||S.genre; S.src=d.src||S.src; S.samples=d.samples!==false; } S.aiKey=d.aiKey||''; S.aiModel=d.aiModel||'sonnet'; const ki=document.getElementById('aiKeyInput'); if(ki)ki.value=S.aiKey; const ms2=document.getElementById('aiModelSel'); if(ms2)ms2.value=S.aiModel; } } }catch(e){}
+      Object.assign(S.profile,d.profile||{}); S.profiles=d.profiles||{}; S.mode=d.mode||S.mode; S.genre=d.genre||S.genre; S.src=d.src||S.src; S.samples=d.samples!==false; } S.aiKey=d.aiKey||''; S.aiModel=d.aiModel||'sonnet'; S.updSnooze=d.updSnooze||''; const ki=document.getElementById('aiKeyInput'); if(ki)ki.value=S.aiKey; const ms2=document.getElementById('aiModelSel'); if(ms2)ms2.value=S.aiModel; } } }catch(e){}
   /* 旧バージョンのプロファイルに新フィールドを補完 */
   for(const k in S.profiles){ const p=S.profiles[k];
     p.leadInst=LEADINSTS.includes(p.leadInst)?p.leadInst:'default';
@@ -6454,7 +6468,7 @@ function renderStats(){
 (async()=>{
   await load();
   setTimeout(()=>{ if(typeof renderChatLog==='function')renderChatLog(); },50);
-  setTimeout(()=>toast('WMB v3.1 を起動しました'),400);
+  setTimeout(()=>toast('WMB v3.2 を起動しました'),400);
   if($('sampSel')) $('sampSel').value=(S.samples!==false)?'on':'off';
   syncSrcUI(); refreshStyleUI(); renderSync();
   setInterval(updateNow,60000);
