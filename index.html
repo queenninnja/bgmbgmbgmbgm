@@ -249,7 +249,7 @@ nav{
       <button id="miniViz" aria-label="待ち受け表示を開く"><canvas id="miniC"></canvas></button>
     </div>
     <div id="nowTitle">タップして、あなたのBGMを始める</div>
-    <div style="text-align:center;font-size:10px;letter-spacing:2px;color:var(--dim);margin-top:2px">WMB v3.0</div>
+    <div style="text-align:center;font-size:10px;letter-spacing:2px;color:var(--dim);margin-top:2px">WMB v3.1</div>
     <div id="nowSub">世界には、まだあなたのBGMがない</div>
 
     <div class="seg" id="srcSeg">
@@ -2745,7 +2745,13 @@ var qrcode = function() {
 
 </script>
 <script>
-/* ================= WMB Prototype v3.0 =================
+/* ================= WMB Prototype v3.1 =================
+   v3.1（実地スクリーンショットからの即応修正）:
+   - 体調系の感情を追加: 頭痛/痛い/気持ち悪/風邪/めまい等
+     →「不調」として瞑想/Ambient/雨宿りへ。音数を減らし
+     「お大事に」の言い回しで受ける（乾いた陽気さ扱いを廃止）。
+   - AIの能動質問: 未回答の質問が残っている間は次を出さない
+     ガード（3連投の防止）。ユーザーの返答で解禁。
    v3.0「本物の脳と整音」:
    [AI接続] ホスティング先ではAnthropicへのCORSで無認証経路が
      使えず、LIVE/シンクロは常にローカル脳へフォールバックして
@@ -5692,9 +5698,10 @@ const LIVE_QS=[
 ];
 function liveAsk(idx){
   if(!live.on||!S.playing)return;
+  if(live.pendingAsk){ scheduleNextAsk(); return; }               /* 前の質問が未回答なら待つ */
   if(Date.now()-live.lastUserMsg<60000){ scheduleNextAsk(); return; } /* 会話中は邪魔しない */
   const q=LIVE_QS[(idx!=null?idx:live.askIdx)%LIVE_QS.length];
-  live.askIdx++;
+  live.askIdx++; live.pendingAsk=true;
   addLiveMsg('ai',q[0],q[1]);
   scheduleNextAsk();
 }
@@ -5738,6 +5745,7 @@ const EMO_LEX={
   greet:['こんにちは','こんにちわ','おはよう','こんばんは','やあ','ハロー','hello','おっす','ちわ'],
   silly:['うんこ','ウンコ','うんち','おなら','鼻くそ','ばか','バカ','あほ','アホ','くだらな','笑','ｗｗ','ww','草','ぷぷ','変な','へんな'],
   creepy:['気色悪','きしょ','キショ','不気味','きも','キモ','ぞっと','ゾッ','呪','ホラー','背筋'],
+  pain:['頭痛','頭が痛','痛い','いたい','体調','具合悪','気持ち悪','吐き気','風邪','熱っぽ','めまい','二日酔い','胃が'],
 };
 const EMO_MUS={
   anger:{styles:['Metal','Punk','Funk'],ops:{tempoDelta:8,brightDelta:-.02},drive:.85,word:'怒り'},
@@ -5752,6 +5760,7 @@ const EMO_MUS={
   greet:{styles:['Ska','Country','Nu Disco'],ops:{brightDelta:.08},drive:.55,word:'挨拶の朗らかさ'},
   silly:{styles:['Ska','Funk','Nu Disco'],ops:{tempoDelta:5,brightDelta:.06},drive:.65,word:'おふざけ'},
   creepy:{styles:['Horror'],ops:{tempoDelta:-6,brightDelta:-.16,reverbDelta:.2},drive:.3,word:'不気味さ'},
+  pain:{styles:['瞑想','Ambient','雨宿り'],ops:{tempoDelta:-10,densityDelta:-.2,brightDelta:-.08,reverbDelta:.06},drive:.15,word:'不調'},
 };
 function emoScan(text){
   const hits=[];
@@ -5832,7 +5841,9 @@ function localLive(text){
         ? `${q1}と「${emos[1].w||''}」、両方受け取りました。${e2.word}の器に${e1.word}の熱を注いで、${style}でぶつけます`
         : escalate
           ? `さらに深く。${e1.word}を増幅して、${style}に踏み込みます`
-          : `${q1}ときましたか。${e1.word}は音で返します——${style}で`];
+          : emos[0].e==='pain'
+            ? `${q1}…無理はさせません。音数を減らして、障らない静けさ（${style}）に置き換えます。お大事に`
+            : `${q1}ときましたか。${e1.word}は音で返します——${style}で`];
     } else {
       /* 完全に未知の言葉: 手触りから推測して、それでも必ず変える */
       const g=GUESS_WHEEL[textHash(text)%GUESS_WHEEL.length];
@@ -5883,7 +5894,7 @@ askは音を変えた上で添える追加質問としてのみ可。
 }
 async function sendLive(text){
   if(!text||!text.trim())return;
-  live.lastUserMsg=Date.now();
+  live.lastUserMsg=Date.now(); live.pendingAsk=false;   /* 返答が来たので次の質問を解禁 */
   addLiveMsg('user',text);
   const inp=document.getElementById('liveInput'); if(inp)inp.value='';
   let res=null;
@@ -6443,7 +6454,7 @@ function renderStats(){
 (async()=>{
   await load();
   setTimeout(()=>{ if(typeof renderChatLog==='function')renderChatLog(); },50);
-  setTimeout(()=>toast('WMB v3.0 を起動しました'),400);
+  setTimeout(()=>toast('WMB v3.1 を起動しました'),400);
   if($('sampSel')) $('sampSel').value=(S.samples!==false)?'on':'off';
   syncSrcUI(); refreshStyleUI(); renderSync();
   setInterval(updateNow,60000);
