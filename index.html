@@ -164,11 +164,36 @@ header{padding:14px 18px 6px; display:flex; justify-content:space-between; align
 #tuneCard.reveal{animation:tunein .42s ease-out}
 @keyframes tunein{from{opacity:0; transform:translateY(-6px) scale(.985)}to{opacity:1; transform:none}}
 /* ハミングモーダル */
+/* v2.9: アプリ的な固定UI（ページ全体の上下スクロール禁止） */
+html,body{height:100%; overflow:hidden; overscroll-behavior:none}
+body{position:fixed; inset:0; width:100%}
+#scr-home.active{overflow:hidden}
+#scr-chat.active{display:flex; flex-direction:column; overflow:hidden}
+#scr-chat #chatLog{flex:1 1 auto; min-height:100px; overflow-y:auto}
+#scr-live.active{display:flex; flex-direction:column; overflow:hidden}
+#liveLog{flex:1 1 auto; overflow-y:auto; min-height:60px}
 #updBar{position:fixed; left:12px; right:12px; bottom:74px; z-index:90;
   background:linear-gradient(90deg,var(--mode1),var(--mode2)); color:#0a0d1a;
   border-radius:12px; padding:11px 14px; font-size:13px; font-weight:700;
   display:flex; align-items:center; justify-content:space-between; gap:10px;
   box-shadow:0 8px 24px rgba(0,0,0,.45); animation:updin .4s ease-out}
+/* v2.9: LIVEの最小ウィジェットと中央チャットボックス */
+#liveMini{display:flex; align-items:center; gap:8px; justify-content:center;
+  margin:8px auto 4px; padding:6px 10px 6px 14px; width:max-content; max-width:92%;
+  border:1px solid var(--line); border-radius:999px; background:rgba(255,255,255,.03);
+  font-size:12.5px; color:var(--dim)}
+#liveMini #liveAct{font-size:15px}
+#liveMini #liveStyle{color:var(--fg); letter-spacing:.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:46vw}
+#liveMini button{width:30px; height:30px; border-radius:50%; border:1px solid var(--mode1);
+  background:transparent; color:var(--mode1); font-size:12px; cursor:pointer; flex:none}
+#liveCenter{padding:10px 14px calc(14px + env(safe-area-inset-bottom))}
+#liveBox{display:flex; align-items:center; gap:6px; max-width:360px; margin:10px auto 0;
+  background:rgba(255,255,255,.055); border:1px solid var(--line); backdrop-filter:blur(8px);
+  border-radius:999px; padding:6px 6px 6px 18px}
+#liveBox input{flex:1; background:transparent; border:none; outline:none; color:var(--fg);
+  font-family:inherit; font-size:14px; min-width:0}
+#liveBox button{width:38px; height:38px; border-radius:50%; border:none; flex:none; cursor:pointer;
+  background:linear-gradient(135deg,var(--mode1),var(--mode2)); color:#0a0d1a; font-size:16px; font-weight:700}
 #updBar button{background:#0a0d1a; color:#fff; border:none; border-radius:9px;
   padding:8px 14px; font-family:inherit; font-size:12.5px; cursor:pointer}
 @keyframes updin{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
@@ -224,7 +249,7 @@ nav{
       <button id="miniViz" aria-label="待ち受け表示を開く"><canvas id="miniC"></canvas></button>
     </div>
     <div id="nowTitle">タップして、あなたのBGMを始める</div>
-    <div style="text-align:center;font-size:10px;letter-spacing:2px;color:var(--dim);margin-top:2px">WMB v2.8</div>
+    <div style="text-align:center;font-size:10px;letter-spacing:2px;color:var(--dim);margin-top:2px">WMB v3.0</div>
     <div id="nowSub">世界には、まだあなたのBGMがない</div>
 
     <div class="seg" id="srcSeg">
@@ -266,27 +291,23 @@ nav{
   </section>
 
   <section class="screen" id="scr-live">
-    <div class="eyebrow" style="text-align:center">LIVE — あなたの「いま」に音楽が寄り添う</div>
-    <div class="card" style="margin-top:10px">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-        <div>
-          <div id="liveAct" style="font-size:22px">🛰 待機中</div>
-          <div id="liveSub" style="font-size:11.5px;color:var(--dim);margin-top:4px">GPSで活動を判定し、BGMを自動で合わせます</div>
-        </div>
-        <button class="btn primary" id="liveToggle" style="white-space:nowrap">▶ LIVE開始</button>
+    <div id="liveMini">
+      <span id="liveAct">🛰</span><span id="liveStyle">LIVE待機中</span>
+      <button id="liveToggle" aria-label="LIVE開始/停止">▶</button>
+    </div>
+    <div id="liveLog">
+      <div class="msg sys">気分・場所・していること——どんな言葉でも音になります。</div>
+    </div>
+    <div id="liveCenter">
+      <div class="suggest" id="liveChips" style="justify-content:center">
+        <button class="chip" data-lq="なんだか落ち着かない">落ち着かない</button>
+        <button class="chip" data-lq="いい天気で気分がいい">気分がいい</button>
+        <button class="chip" data-lq="懐かしい気持ちになりたい">懐かしく</button>
       </div>
-    </div>
-    <div id="liveLog" style="display:flex;flex-direction:column;gap:10px;min-height:120px;margin-top:14px">
-      <div class="msg sys">気分・場所・していること——どんな言葉でも音になります。「雨上がりの匂い」「テスト前の緊張」「祖母の台所」でも。</div>
-    </div>
-    <div class="suggest" id="liveChips">
-      <button class="chip" data-lq="なんだか落ち着かない">落ち着かない</button>
-      <button class="chip" data-lq="いい天気で気分がいい">気分がいい</button>
-      <button class="chip" data-lq="懐かしい気持ちになりたい">懐かしくなりたい</button>
-    </div>
-    <div id="chatBar" style="position:static">
-      <input id="liveInput" placeholder="いまの気分・場所・していること…" autocomplete="off">
-      <button class="btn primary" id="liveSend">送信</button>
+      <div id="liveBox">
+        <input id="liveInput" placeholder="いまの気分、ひとこと" autocomplete="off">
+        <button id="liveSend" aria-label="送信">↑</button>
+      </div>
     </div>
   </section>
   <section class="screen" id="scr-chat">
@@ -296,7 +317,7 @@ nav{
         <div class="tbRow">
           <span class="tbLabel">育てる対象</span>
           <button class="chip on" id="curStyleChip">—</button>
-          <button id="openPicker" aria-expanded="false">ほかのジャンル<span class="chev">▾</span></button>
+          <button id="openPicker" aria-expanded="false">Other<span class="chev">▾</span></button>
         </div>
         <div class="tbBtns two">
           <button class="tbBtn" id="humBtn">🎤 ハミングで作る</button>
@@ -365,7 +386,12 @@ nav{
       <div class="row"><span>マスター音量</span><input type="range" id="masterVol" min="0" max="100" value="70"></div>
     </div>
     <div class="card">
-      <div class="row"><span>AIチャット接続</span><span style="font-size:11px;color:var(--dim)">API（自動）/ 圏外時はローカル解釈</span></div>
+      <div class="row" style="flex-wrap:wrap;gap:8px"><span>AI接続（Anthropic APIキー）</span>
+        <input type="password" id="aiKeyInput" placeholder="sk-ant-…" style="flex:1;min-width:150px;background:var(--bg2);border:1px solid var(--line);color:var(--fg);border-radius:8px;padding:8px 10px;font-size:12px" autocomplete="off">
+      </div>
+      <div class="row"><span>AIの頭脳</span>
+        <select id="aiModelSel"><option value="sonnet">標準（Sonnet 4.6）</option><option value="opus">高性能（Opus 4.8）</option></select></div>
+      <div style="font-size:10.5px;color:var(--dim);line-height:1.6;margin:2px 0 8px">キーは端末内にのみ保存され、Anthropic以外へ送信されません。空欄の場合、ホスティング先ではローカル脳が応答します（claude.aiプレビュー内では自動接続）。</div>
       <div class="row"><span>スタイル別の調整をすべてリセット</span><button class="btn" id="resetAllProf">リセット</button></div>
       <div class="row"><span>データを全消去（章・学習・ログ）</span><button class="btn" id="wipeBtn" style="border-color:var(--rose);color:var(--rose)">消去</button></div>
     </div>
@@ -2719,7 +2745,46 @@ var qrcode = function() {
 
 </script>
 <script>
-/* ================= WMB Prototype v2.8 =================
+/* ================= WMB Prototype v3.0 =================
+   v3.0「本物の脳と整音」:
+   [AI接続] ホスティング先ではAnthropicへのCORSで無認証経路が
+     使えず、LIVE/シンクロは常にローカル脳へフォールバックして
+     いた（=的外れの正体）。設定にAPIキー欄とモデル選択
+     （Sonnet 4.6 / Opus 4.8）を追加。キーは端末内のみ保存。
+     未設定でローカル応答時は一度だけ案内を表示。
+   [世界観の整音] 「音がずれてる/低性能AI臭い」の実装犯:
+     (1)パッド和音が声部連結なしの生配列→voiceLead+polishで
+        滑らかな重なりに。
+     (2)メロディに最大16分1個分のランダム遅延→±12%へ規律。
+     (3)アルペジオの0.9倍詰めグリッド→正グリッド+強弱アーク。
+     (4)RPGアルペジオのデチューン過多→半減で濁り除去。
+   [感情エンジン拡張] おふざけ(うんこ/草…→SkaやFunkでノリ返し)
+     不気味(気色悪/キモ…→Horrorへ)。「もっと◯◯」は直前の感情を
+     記憶し増幅（ops×1.7+より深いスタイルへ）。一致した実際の
+     言葉を引用して応答（「気色悪」ときましたか、等）。
+   =======================================================
+   v2.9「ムードOS」(スマホ改築+大規模改善):
+   [UI] 画面全体のスクロールを禁止しアプリ的な固定UIに
+     （チャット/LIVEのログのみ内部スクロール）。LIVEは最小ピル
+     ウィジェット+中央にポンと置かれた丸型チャットボックスへ
+     再設計。シンクロの「ほかのジャンル」→「Other ▾」。
+   [世界観] モードを11→31種へ拡張（朝焼け/図書館/終電/雪/
+     高速道路/瞑想…雛形クローン方式）。
+   [文脈=ムード] 天候/移動/時間帯を強く音へ翻訳: 雨=残響の膜+
+     雨テクスチャ+音数減、星空=きらめき、電車=車輪のリズム、
+     走行=心拍テンポ+ドラム増。セレクタ変更は即タイプ表示。
+   [学習] 文脈(天候×移動×時間帯)ごとにユーザーの操作・言葉・
+     フィードバック・聴取をEMA蓄積し、次に同じ文脈が来たら
+     無入力でその人のムードに寄ったBGMを出す（LIVE自動選曲も
+     学習スタイルを最優先）。
+   [新興ジャンル] Jazz House/Acid Jazz/Funk House/Nu Disco/
+     Neo Soul/Lo-fi House 追加（計31ジャンル）。ハイブリッドは
+     伴奏に実サンプルを試行しつつシンセ併用可。
+   [感情エンジン] 10感情の語彙スキャン+感情→音楽変換表。
+     混在は器と熱のブレンド（くそこんにちは=和やかアングリー
+     →Skaに怒りの熱）。未知語も手触り推測で必ず曲を変える。
+     「質問だけ返す」を全廃。AIプロンプトにも同規則を明記。
+   =======================================================
    v2.8「自動アップデート」:
    - 起動2.5秒後(以後30分ごと)にホスティング先の最新版番号を
      確認(Range取得で先頭30KBのみ・通信量節約)。新版があれば
@@ -3089,6 +3154,35 @@ const MODES = {
 };
 
 /* ---------- ジャンル（21: アコースティック系15 + 電子系6） ---------- */
+/* ===== v2.9 世界観モードの大幅拡張（既存モードを雛形に個性を上書き） ===== */
+function cloneMode(base,ov){
+  const m=JSON.parse(JSON.stringify(MODES[base]));
+  const g=Object.assign({},m.g,ov.g||{}), lead=Object.assign({},m.lead,ov.lead||{});
+  return Object.assign(m,ov,{g,lead});
+}
+Object.assign(MODES,{
+  '朝焼け':      cloneMode('Relax',{c1:'#F6B08A',c2:'#8AC6F6',tempo:72,root:55,bright:.66,g:{arp:.6,mel:.7}}),
+  '週末の朝':    cloneMode('Lo-fi',{c1:'#F0D08A',c2:'#8AD6B0',tempo:78,bright:.55}),
+  '昼下がり':    cloneMode('Relax',{c1:'#F6E08A',c2:'#8AD68A',tempo:86,root:52,bright:.6,g:{drum:.25,mel:.7}}),
+  '図書館':      cloneMode('Lo-fi',{c1:'#B0A88A',c2:'#8A9AB6',tempo:66,bright:.42,g:{drum:.2,noise:.25,mel:.5}}),
+  '喫茶店':      cloneMode('Lo-fi',{c1:'#C8965A',c2:'#7A5AC8',tempo:82,swing:.6,bright:.5,g:{mel:.75}}),
+  '散歩':        cloneMode('Fantasy',{c1:'#9AD65A',c2:'#5AC8E6',tempo:94,bright:.6,g:{drum:.45}}),
+  '海辺':        cloneMode('Relax',{c1:'#5ACDE6',c2:'#E6D25A',tempo:76,root:52,bright:.58,g:{noise:.3,arp:.55}}),
+  '森':          cloneMode('Fantasy',{c1:'#5A9A5A',c2:'#A8D68A',tempo:70,bright:.5,g:{arp:.95,drum:.15}}),
+  '黄昏':        cloneMode('Movie',{c1:'#E88A5A',c2:'#6A5AC8',tempo:68,scale:'minor',root:52,bright:.45}),
+  '都会の夜':    cloneMode('Cyberpunk',{c1:'#E85AB4',c2:'#5AD6E8',tempo:96,bright:.5,g:{mel:.65}}),
+  '終電':        cloneMode('Lo-fi',{c1:'#8A8AB6',c2:'#4A4A6E',tempo:72,scale:'minor',root:50,bright:.35,g:{noise:.35}}),
+  '真夜中':      cloneMode('Relax',{c1:'#4A5A8A',c2:'#8A5AC8',tempo:58,scale:'minor',root:50,bright:.3,g:{drum:0,arp:.3,noise:.2}}),
+  '雨宿り':      cloneMode('Lo-fi',{c1:'#7A9AB6',c2:'#5A6A8A',tempo:64,bright:.38,g:{noise:.4}}),
+  '雪':          cloneMode('Relax',{c1:'#D8E8F6',c2:'#8AB6E8',tempo:60,root:57,bright:.62,g:{arp:.9,drum:0,mel:.55}}),
+  '夏の夕立':    cloneMode('Movie',{c1:'#5A8AE8',c2:'#E8D25A',tempo:88,bright:.48,g:{drum:.55,noise:.3}}),
+  '高速道路':    cloneMode('Sci-Fi',{c1:'#5AE8C8',c2:'#B45AE8',tempo:108,bright:.55,g:{bass:.9,drum:.7}}),
+  '旅立ち':      cloneMode('Adventure',{c1:'#E8B45A',c2:'#5AB4E8',tempo:104,bright:.62}),
+  'ホームパーティ':cloneMode('Adventure',{c1:'#E85A8A',c2:'#E8D25A',tempo:112,bright:.62,g:{drum:.8,mel:.8}}),
+  '瞑想':        cloneMode('Relax',{c1:'#8AE6C8',c2:'#C8B0E8',tempo:52,bright:.42,g:{drum:0,bass:.3,arp:.25,mel:.4,noise:.15}}),
+  '夜勤':        cloneMode('Cyberpunk',{c1:'#5A6E8A',c2:'#8A5A6E',tempo:84,bright:.4,g:{mel:.5,drum:.5}}),
+});
+
 const GENRES = {
   'Jazz':{c1:'#C9A15A',c2:'#5B4FB0',tempo:126,swing:.64,scale:'major',root:53,shape:'run',kit:'jazz',comp2:'R.....S...............S...R..P.',shell:1,bright:.55,
     prog:[[1,'m7'],[4,'d7'],[0,'maj7'],[5,'m7']],
@@ -3337,7 +3431,68 @@ function userSeedFor(key){
   return h;
 }
 let sessionSeed=(Math.random()*4294967295)>>>0;
-const WMB_VER='2.8';
+const WMB_VER='3.0';
+/* ===== AI接続 v3.0 =====
+   claude.aiプレビュー内では無認証プロキシ、ホスティング先（GitHub Pages等）では
+   ユーザーのAPIキーで直接呼ぶ（キーは端末内保存・Anthropic以外へ送信しない）。 */
+let aiNoticeShown=false;
+function aiHeaders(){
+  const h={'Content-Type':'application/json'};
+  if(S.aiKey){
+    h['x-api-key']=S.aiKey;
+    h['anthropic-version']='2023-06-01';
+    h['anthropic-dangerous-direct-browser-access']='true';
+  }
+  return h;
+}
+function aiModel(){ return S.aiModel==='opus'?'claude-opus-4-8':'claude-sonnet-4-6'; }
+async function aiCall(system,user,maxTokens){
+  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:aiHeaders(),
+    body:JSON.stringify({model:aiModel(),max_tokens:maxTokens||900,system,messages:[{role:'user',content:user}]})});
+  if(!r.ok) throw new Error('api '+r.status);
+  const data=await r.json();
+  return (data.content||[]).map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
+}
+function aiFellBack(where){
+  if(aiNoticeShown||S.aiKey)return;
+  aiNoticeShown=true;
+  const note='※ いまはローカル脳が応答しています。設定→AI接続にAnthropic APIキーを入れると、本物のAI（claude）が担当します。';
+  if(where==='live') addLiveMsg('sys',note); else if(typeof addMsg==='function') addMsg('sys',note);
+}
+
+/* ===== 文脈学習エンジン v2.9 =====
+   「天候×移動×時間帯」の組ごとに、ユーザーの操作・言葉・フィードバックを
+   EMAで蓄積。次に同じ文脈が来たとき、何も打ち込まなくても
+   その人のムードに寄ったBGMを最初から出す。 */
+function ctxKey(){ const c=contextNow(); return `${S.ctx.weather}|${S.ctx.move}|${c.daypart}`; }
+function ctxPrefEntry(){
+  const P=(S.profile.ctxPrefs=S.profile.ctxPrefs||{});
+  const k=ctxKey();
+  return P[k]=P[k]||{tempoDelta:0,brightDelta:0,reverbDelta:0,densityDelta:0,styles:{},n:0};
+}
+function learnCtx(delta,w){
+  const e=ctxPrefEntry(); const a=Math.min(.5,.22*(w||1));
+  for(const f of ['tempoDelta','brightDelta','reverbDelta','densityDelta'])
+    if(delta&&typeof delta[f]==='number') e[f]=e[f]*(1-a)+delta[f]*a;
+  e.n++;
+}
+function voteStyle(name,w){
+  const e=ctxPrefEntry();
+  e.styles[name]=Math.max(-3,Math.min(12,(e.styles[name]||0)+w));
+}
+function ctxBestStyle(){
+  const e=(S.profile.ctxPrefs||{})[ctxKey()]; if(!e)return null;
+  let best=null,bv=1.6;
+  for(const k in e.styles) if(e.styles[k]>bv){bv=e.styles[k];best=k;}
+  return best;
+}
+function learnFromOps(ops){
+  if(!Array.isArray(ops))return;
+  const d={};
+  for(const o of ops) if(o&&['tempoDelta','brightDelta','reverbDelta','densityDelta'].includes(o.path)&&o.op!=='mul') d[o.path]=o.value;
+  if(Object.keys(d).length) learnCtx(d,1);
+}
+
 async function checkUpdate(){
   if(typeof location==='undefined'||typeof document==='undefined')return;
   if(!/^https?:$/.test(location.protocol))return;
@@ -3359,7 +3514,7 @@ async function checkUpdate(){
 setTimeout(checkUpdate,2500);
 setInterval(checkUpdate,30*60*1000);   /* 開きっぱなしでも30分ごとに確認 */
 
-const DEFLEAD_ALT={'Bossa Nova':['flute','guitar'],'Soul':['sax','epiano'],'Country':['guitar','eguitar'],'R&B':['epiano','sax'],'City Pop':['epiano','guitar'],'Reggae':['organ','eguitar'],'Latin':['trumpet','sax'],'Hip-Hop':['epiano','organ'],'Blues':['eguitar','organ'],'Ska':['trumpet','sax'],'Disco':['epiano','eguitar'],'Funk':['eguitar','epiano'],'J-Pop':['piano','epiano']};
+const DEFLEAD_ALT={'Jazz House':['sax','trumpet'],'Acid Jazz':['organ','sax'],'Neo Soul':['epiano','sax'],'Nu Disco':['epiano','eguitar'],'Bossa Nova':['flute','guitar'],'Soul':['sax','epiano'],'Country':['guitar','eguitar'],'R&B':['epiano','sax'],'City Pop':['epiano','guitar'],'Reggae':['organ','eguitar'],'Latin':['trumpet','sax'],'Hip-Hop':['epiano','organ'],'Blues':['eguitar','organ'],'Ska':['trumpet','sax'],'Disco':['epiano','eguitar'],'Funk':['eguitar','epiano'],'J-Pop':['piano','epiano']};
 function personalizeProf(p,key){
   if(key==='G:Jazz')return p;
   let ms=userSeedFor(key);
@@ -3385,14 +3540,14 @@ function prof(k){ const key=k||curKey();
 function isTuned(key){ const p=S.profiles[key]; if(!p)return false; return JSON.stringify(p,stripNotes)!==(p._base||DEFPROF_JSON); }
 function styleName(){ return S.src==='genre'?S.genre:S.mode; }
 
-async function save(){ try{ if(window.storage) await window.storage.set('wmb:v2', JSON.stringify({v:26, profile:S.profile, profiles:S.profiles, mode:S.mode, genre:S.genre, src:S.src, samples:S.samples!==false})); }catch(e){} }
+async function save(){ try{ if(window.storage) await window.storage.set('wmb:v2', JSON.stringify({v:26, aiKey:S.aiKey||'', aiModel:S.aiModel||'sonnet', profile:S.profile, profiles:S.profiles, mode:S.mode, genre:S.genre, src:S.src, samples:S.samples!==false})); }catch(e){} }
 async function load(){ try{ if(window.storage){ const r=await window.storage.get('wmb:v2'); if(r&&r.value){ const d=JSON.parse(r.value);
       if((d.v||0)<26){ /* 旧バージョンの保存状態（シンセ指定等）を破棄 */
         S.profiles={}; S.src='genre'; S.genre='Jazz';
         Object.assign(S.profile,{chapters:(d.profile&&d.profile.chapters)||[]});
         setTimeout(()=>toast('新バージョンのため音の設定を初期化しました（章は保持）'),800);
       } else {
-      Object.assign(S.profile,d.profile||{}); S.profiles=d.profiles||{}; S.mode=d.mode||S.mode; S.genre=d.genre||S.genre; S.src=d.src||S.src; S.samples=d.samples!==false; } } } }catch(e){}
+      Object.assign(S.profile,d.profile||{}); S.profiles=d.profiles||{}; S.mode=d.mode||S.mode; S.genre=d.genre||S.genre; S.src=d.src||S.src; S.samples=d.samples!==false; } S.aiKey=d.aiKey||''; S.aiModel=d.aiModel||'sonnet'; const ki=document.getElementById('aiKeyInput'); if(ki)ki.value=S.aiKey; const ms2=document.getElementById('aiModelSel'); if(ms2)ms2.value=S.aiModel; } } }catch(e){}
   /* 旧バージョンのプロファイルに新フィールドを補完 */
   for(const k in S.profiles){ const p=S.profiles[k];
     p.leadInst=LEADINSTS.includes(p.leadInst)?p.leadInst:'default';
@@ -3417,27 +3572,38 @@ function curDef(){ return S.src==='genre'? GENRES[S.genre] : MODES[S.mode]; }
 function effectiveParams(){
   const m=curDef(), c=contextNow(), p=prof();
   let tempo=m.tempo, bright=m.bright, density=1, reverb=(S.src==='genre'?.14:.3)+p.reverbDelta;
-  if(c.daypart==='朝'){bright+=.1}
-  if(c.daypart==='深夜'){bright-=.15; tempo-=6; density-=.2}
-  if(c.daypart==='夜'){bright-=.08; tempo-=3}
-  if(c.weather==='rain'){bright-=.1; reverb+=.15; density-=.1}
-  if(c.weather==='night_clear'){reverb+=.12}
-  if(c.move==='walk'){tempo+=6; density+=.1}
-  if(c.move==='train'){tempo-=4; reverb+=.08}
-  if(c.move==='run'){tempo+=18; density+=.25}
+  /* v2.9 文脈=ムードエンジン: 天候/移動/時間帯を「その時の気分の表現」として
+     強く・分かりやすく音へ翻訳する。tex=専用テクスチャ */
+  const tex=[]; let ctxDrums=1, ctxDrive=0, ctxSwing=0;
+  const dp=c.daypart;
+  if(dp==='朝'){bright+=.12}
+  if(dp==='夕'){bright-=.04; reverb+=.06}
+  if(dp==='夜'){bright-=.1; tempo-=3}
+  if(dp==='深夜'){bright-=.18; tempo-=7; density-=.2}
+  if(c.weather==='clear'){bright+=.08; ctxDrive+=.05}
+  if(c.weather==='cloudy'){bright-=.1; density-=.08; reverb+=.05}
+  if(c.weather==='rain'){bright-=.16; reverb+=.22; density-=.15; tempo-=4; ctxDrums*=.8; tex.push('rain')}
+  if(c.weather==='night_clear'){reverb+=.18; bright-=.1; tempo-=4; tex.push('stars')}
+  if(c.move==='still'){tempo-=3; ctxDrums*=.85}
+  if(c.move==='walk'){tempo+=4; density+=.08}
+  if(c.move==='train'){tempo+=2; reverb+=.1; ctxSwing+=.02; tex.push('train')}
+  if(c.move==='run'){tempo+=14; density+=.2; ctxDrive+=.25; ctxDrums*=1.2}
+  /* 学習層: この文脈でユーザーが繰り返し求めた方向へ寄せる */
+  const cp=(S.profile.ctxPrefs||{})[ctxKey()];
+  if(cp){ tempo+=cp.tempoDelta*.7; bright+=cp.brightDelta*.7; reverb+=cp.reverbDelta*.7; density+=cp.densityDelta*.7; }
   tempo=Math.max(48,Math.min(180,tempo+p.tempoDelta));
   bright=Math.max(.1,Math.min(1,bright+p.brightDelta));
   density=Math.max(.25,Math.min(1.4,density+p.densityDelta));
   reverb=Math.max(.02,Math.min(.95,reverb));
-  const swing=Math.max(.5,Math.min(.72,(m.swing||.5)+p.swingDelta));
+  const swing=Math.max(.5,Math.min(.72,(m.swing||.5)+p.swingDelta+ctxSwing));
   /* ドラム・メロディの倍率は指数カーブで顕著に効かせる */
   const dmul=x=>Math.pow(Math.max(0,x),1.8);
-  const drumsX={kick:dmul(p.drums.kick),snare:dmul(p.drums.snare),hat:dmul(p.drums.hat),perc:dmul(p.drums.perc)};
+  const drumsX={kick:dmul(p.drums.kick)*ctxDrums,snare:dmul(p.drums.snare)*ctxDrums,hat:dmul(p.drums.hat)*ctxDrums,perc:dmul(p.drums.perc)*ctxDrums};
   const melX={act:p.melody.act, gain:.5+.75*Math.min(2,p.melody.act), oct:p.melody.oct, len:p.melody.len||1, shape:p.melody.shape||'default'};
   /* 楽器アレンジ: リード楽器に合わせて伴奏を引き、フレーズの性格を変える */
   const arr=(p.leadInst&&p.leadInst!=='default')?(INST_ARRANGE[p.leadInst]||{}):{};
   const padMul=(p.leadInst&&p.leadInst!=='default')?(arr.compDuck||.85):1;
-  return {tempo,bright,density,reverb,swing,def:m,ctx:c,prof:p,drumsX,melX,arr,padMul,perf:p.perf||{drive:.5,comp:.5},space:p.space||'direct'};
+  return {tex,ctxDrive,tempo,bright,density,reverb,swing,def:m,ctx:c,prof:p,drumsX,melX,arr,padMul,perf:{...p.perf,drive:Math.max(0,Math.min(1,(p.perf?p.perf.drive:.5)+ctxDrive))}||{drive:.5,comp:.5},space:p.space||'direct'};
 }
 function ctxLabel(){ const c=contextNow(); const w={clear:'晴れ',cloudy:'くもり',rain:'雨',night_clear:'星空'}[c.weather]; const mv={still:'滞在中',walk:'歩行',train:'電車',run:'走行'}[c.move]; return `${S.ctx.place}・${c.daypart}・${w}・${mv}`; }
 
@@ -3745,6 +3911,29 @@ function snareX(t,gain,dest,kit){
 }
 /* ライドシンバル: 帯域ノイズのウォッシュ + スティックのピング（スクエア波スタック廃止） */
 let rideBuf=null;
+/* 文脈テクスチャ v2.9: 雨の膜 / 星のきらめき / 車輪のリズム */
+function ctxTexture(P,t,spb,bar,sub){
+  if(!P.tex||!P.tex.length||sub!==0)return;
+  if(!rideBuf) rideCym(t,0,layerG.noise,false);
+  if(P.tex.includes('rain')){
+    const src=AC.createBufferSource(); src.buffer=rideBuf; src.loop=true;
+    const lp=AC.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=1100;
+    const g=AC.createGain();
+    g.gain.setValueAtTime(.0001,t); g.gain.linearRampToValueAtTime(.022,t+.3);
+    g.gain.setValueAtTime(.022,t+spb*4-.3); g.gain.linearRampToValueAtTime(.0001,t+spb*4);
+    src.connect(lp); lp.connect(g); g.connect(layerG.noise);
+    src.start(t,Math.random()); src.stop(t+spb*4+.1);
+    for(let i=0;i<3;i++){ const tt=t+Math.random()*spb*4;
+      tone(tt,2400+Math.random()*2000,.03,'sine',.012,layerG.noise,0,.003); }
+  }
+  if(P.tex.includes('stars')&&Math.random()<.4){
+    tone(t+Math.random()*spb*3,1560+Math.random()*900,.5,'sine',.02,layerG.noise,0,.02);
+  }
+  if(P.tex.includes('train')&&bar%2===0){
+    [0,.13].forEach((d,i)=>tomTone(t+spb*3.5+d,88,.06,.05-(i*.015),layerG.noise));
+  }
+}
+
 function rideCym(t,gain,dest,accent){
   if(!rideBuf){
     rideBuf=AC.createBuffer(1,Math.floor(AC.sampleRate*1.2),AC.sampleRate);
@@ -3840,6 +4029,7 @@ const THEMES={
 /* 音響系ジャンル: シンセ発音を全面禁止し実楽器サンプルのみ */
 const ACOUSTIC=new Set(['Soul','Disco','Metal','Ska','Jazz','Bossa Nova','Latin','Funk','R&B','Country','Blues','Rock','Punk','Reggae','J-Pop','City Pop','Hip-Hop']);
 /* ジャンル標準の伴奏楽器（実サンプル） */
+const GENRE_COMPGM_X={};
 const GENRE_COMPGM={'Soul':'electric_piano_1','Disco':'electric_piano_1','Metal':'electric_guitar_clean','Ska':'electric_guitar_clean','Jazz':'acoustic_grand_piano','Bossa Nova':'acoustic_guitar_nylon','Latin':'acoustic_grand_piano','Funk':'electric_guitar_clean','R&B':'electric_piano_1','Country':'acoustic_guitar_steel','Blues':'electric_guitar_clean','Rock':'electric_guitar_clean','Punk':'electric_guitar_clean','Reggae':'electric_guitar_clean','J-Pop':'acoustic_grand_piano','City Pop':'electric_piano_1','Hip-Hop':'electric_piano_1'};
 
 const SF_SOURCES=[
@@ -3870,9 +4060,46 @@ function decodeAB(ab){
 const INST_GM={piano:'acoustic_grand_piano',epiano:'electric_piano_1',guitar:'acoustic_guitar_steel',eguitar:'electric_guitar_clean',harp:'orchestral_harp',bell:'celesta',musicbox:'music_box',celesta:'celesta',vibraphone:'vibraphone',marimba:'marimba',steeldrum:'steel_drums',koto:'koto',flute:'flute',panflute:'pan_flute',whistle:'whistle',clarinet:'clarinet',oboe:'oboe',trumpet:'trumpet',sax:'alto_sax',violin:'violin',cello:'cello',strings:'string_ensemble_1',choir:'choir_aahs',accordion:'accordion',organ:'drawbar_organ'};
 const COMP_GM={piano:'acoustic_grand_piano',epiano:'electric_piano_1',guitar:'acoustic_guitar_nylon',strings:'string_ensemble_1',organ:'drawbar_organ'};
 /* ジャンルごとの「標準の生楽器リード」: defaultのままでも実楽器が歌う */
-const GENRE_DEFLEAD={'Soul':'sax','Disco':'epiano','Metal':'eguitar','Ska':'trumpet','Jazz':'trumpet','Latin':'trumpet','Blues':'eguitar','Rock':'eguitar','Punk':'eguitar','Funk':'eguitar','Country':'guitar','Bossa Nova':'flute','R&B':'epiano','City Pop':'epiano','Hip-Hop':'epiano','J-Pop':'piano','Reggae':'organ'};
+/* ===== v2.9 新興ハイブリッドジャンル（雛形クローン+個性上書き） ===== */
+function cloneGenre(base,ov){
+  const g0=JSON.parse(JSON.stringify(GENRES[base]));
+  const g=Object.assign({},g0.g,ov.g||{}), lead=Object.assign({},g0.lead,ov.lead||{});
+  const drums=ov.drums?Object.assign({},g0.drums,ov.drums):g0.drums;
+  return Object.assign(g0,ov,{g,lead,drums});
+}
+Object.assign(GENRES,{
+  /* 4つ打ちの上でジャズの和声とサックスが泳ぐ */
+  'Jazz House': cloneGenre('House',{c1:'#E8C97A',c2:'#5B8FD6',tempo:122,swing:.55,scale:'major',root:53,
+    voicing:'shell',comp2:'R.....S.......P.R.....S...S...P.',
+    prog:[[1,'m7'],[4,'d7'],[0,'maj7'],[5,'m7']],lead:{oct:1}}),
+  /* 生のファンクとジャズが混ざる粘り */
+  'Acid Jazz': cloneGenre('Funk',{c1:'#B4E85A',c2:'#8A5AC8',tempo:104,swing:.6,scale:'dorian',root:50,
+    voicing:'funk9',prog:[[0,'m9'],[3,'maj7'],[0,'m9'],[4,'d7']],lead:{oct:1}}),
+  'Funk House': cloneGenre('House',{c1:'#E85AB4',c2:'#E8D25A',tempo:121,scale:'minor',root:50,
+    voicing:'funk9',comp2:'M.S.M.S.M.S.M.S.M.S.M.S.M.S.M.S.',lead:{oct:0}}),
+  'Nu Disco': cloneGenre('Disco',{c1:'#F08AD6',c2:'#5AE8D6',tempo:114,bright:.58,voicing:'guide'}),
+  /* 引きずるビートの上の9thエレピ */
+  'Neo Soul': cloneGenre('Soul',{c1:'#C88A5A',c2:'#6A5AC8',tempo:84,swing:.62,scale:'dorian',root:51,
+    voicing:'guide',comp2:'R.......S...P...R.....S.......P.',lead:{oct:1}}),
+  'Lo-fi House': cloneGenre('House',{c1:'#B0A88A',c2:'#7A8AB6',tempo:116,bright:.4,voicing:'guide',g:{drum:.75}}),
+});
+Object.assign(THEMES,{
+  'Jazz House':[T(0,4,2,.9,'stac'),T(4,5,2,.85,'stac'),T(7,7,3,.95),T(12,4,2,.8,'stac'),T(16,5,2,.9,'stac'),T(20,4,2,.85,'stac'),T(23,2,3,.9),T(28,0,4,.9)],
+  'Acid Jazz':[T(0,0,2,.9,'stac'),T(3,3,1,.8,'stac'),T(6,4,2,.9),T(10,3,2,.8,'stac'),T(12,0,4,.95),T(19,4,1,.75,'stac'),T(22,5,2,.9),T(24,3,6,.9)],
+  'Funk House':[T(0,0,1,1,'stac'),T(3,3,1,.85,'stac'),T(6,0,1,.9,'stac'),T(10,4,2,.95,'stac'),T(16,0,1,1,'stac'),T(19,3,1,.85,'stac'),T(22,5,2,.95,'stac'),T(26,4,2,.9,'stac')],
+  'Nu Disco':[T(0,0,2,.9,'stac'),T(4,4,2,.85,'stac'),T(8,7,2,.95,'stac'),T(12,5,2,.85,'stac'),T(16,4,2,.9,'stac'),T(20,2,2,.85,'stac'),T(24,0,6,.95)],
+  'Neo Soul':[T(2,4,4,.85),T(9,3,3,.8),T(14,2,2,.75),T(16,0,6,.95),T(26,2,4,.85)],
+  'Lo-fi House':[T(0,0,2,.8,'stac'),T(6,4,2,.75,'stac'),T(12,2,2,.7,'stac'),T(16,0,2,.8,'stac'),T(22,4,2,.75,'stac'),T(26,5,4,.8)],
+});
+Object.assign(GENRE_COMPGM_X,{
+  'Jazz House':'acoustic_grand_piano','Acid Jazz':'drawbar_organ','Funk House':'electric_guitar_clean',
+  'Nu Disco':'electric_piano_1','Neo Soul':'electric_piano_1','Lo-fi House':'electric_piano_1'});
+['Acid Jazz','Neo Soul'].forEach(g=>ACOUSTIC.add(g));
+
+const GENRE_DEFLEAD={'Jazz House':'sax','Acid Jazz':'organ','Funk House':'eguitar','Nu Disco':'epiano','Neo Soul':'epiano','Lo-fi House':'epiano','Soul':'sax','Disco':'epiano','Metal':'eguitar','Ska':'trumpet','Jazz':'trumpet','Latin':'trumpet','Blues':'eguitar','Rock':'eguitar','Punk':'eguitar','Funk':'eguitar','Country':'guitar','Bossa Nova':'flute','R&B':'epiano','City Pop':'epiano','Hip-Hop':'epiano','J-Pop':'piano','Reggae':'organ'};
 const ABASS_STYLES=new Set(['walk','bossa','tumbao']);
 const EBASS_GENRES=new Set(['Soul','Disco','Metal','Ska','Rock','Punk','Country','Reggae','Funk','R&B','J-Pop','City Pop','Hip-Hop','Blues']);
+['Acid Jazz','Neo Soul'].forEach(g=>EBASS_GENRES.add(g));
 const FLATNAMES=['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
 function noteName(m){ return FLATNAMES[m%12]+(Math.floor(m/12)-1); }
 const MEL_MIDIS=[48,52,55,60,64,67,72,76];
@@ -4465,10 +4692,11 @@ function padChord(t,notes,dur,gain,attack,P){
 function scheduleBeatWorld(t,b,P){
   const M=P.def, sc=SCALES[M.scale], spb=60/P.tempo, s16=spb/4;
   const bar=Math.floor(b/4), sub=b%4;
+  ctxTexture(P,t,spb,bar,sub);
   const sec=sectionOf(bar), lift=sec==='B'?1.15:1;
   const prog=(sec==='B'&&M.progB)?M.progB:M.prog;
   const entry=prog[bar%prog.length];
-  const cn=chordNotes(M,entry,1);
+  const cn=polishVoicing(voiceLead('W:'+S.mode, chordNotes(M,entry,1)));
   const rootLow=degNote(M.root-12,sc,entry[0],0);
   const ug=P.prof.gains, D=P.drumsX;
   const gv=k=>Math.max(0,Math.min(1.4,M.g[k]*ug[k]))*P.density*lift*(k==='pad'?P.padMul:1);
@@ -4500,8 +4728,8 @@ function scheduleBeatWorld(t,b,P){
     if(rnd()<.35*P.density*P.melX.act&&kg>0){
       const n=cn[Math.floor(rnd()*cn.length)]+12*(rnd()<.3?1:0)+P.melX.oct*12;
       const li=P.prof.leadInst||'default';
-      if(li!=='default') playLead(li,t+swO(sub*4)+rnd()*s16,midi2f(n),spb*1.6,.12*kg*P.melX.gain,layerG.mel);
-      else keys(t+swO(sub*4)+rnd()*s16,midi2f(n),spb*1.6,.12*kg*P.melX.gain,layerG.mel,.01);
+      if(li!=='default') playLead(li,t+swO(sub*4)+rnd()*s16*.12,midi2f(n),spb*1.6,.12*kg*P.melX.gain,layerG.mel);
+      else keys(t+swO(sub*4)+rnd()*s16*.12,midi2f(n),spb*1.6,.12*kg*P.melX.gain,layerG.mel,.01);
     }
     if(gv('bass')>0&&chordStart) tone(t,midi2f(rootLow),spb*3.4,'sine',.14*gv('bass'),layerG.bass,0,.06);
     if(gv('arp')>0&&bar%4===3&&sub===2&&rnd()<.5) bell(t,midi2f(cn[2]+12),.06*gv('arp'),layerG.arp);
@@ -4520,7 +4748,7 @@ function scheduleBeatWorld(t,b,P){
     const ag=gv('arp');
     if(ag>0&&bar%2===0&&(sub===0||sub===1)){
       const tt=t+(sub===1?s16*2:0);
-      cn.forEach(n=>tone(tt,midi2f(n+12),spb*.5,'sawtooth',.05*ag,layerG.arp,6,.015));
+      cn.forEach(n=>tone(tt,midi2f(n+12),spb*.5,'sawtooth',.05*ag,layerG.arp,3,.02));
     }
     if(gv('bass')>0&&(sub===0||sub===2)) tone(t,midi2f(rootLow),spb*.9,'triangle',.2*gv('bass'),layerG.bass,0,.015);
     playMotif(t,bar,sub,M,entry,P,gv('mel'),layerG.mel,'RPG');
@@ -4530,7 +4758,7 @@ function scheduleBeatWorld(t,b,P){
     const ag=gv('arp');
     if(ag>0&&chordStart&&bar%2===0){
       for(let i=0;i<6;i++){ const n=degNote(M.root,sc,entry[0]+i,1+Math.floor(i/4));
-        pluck(t+i*s16*.9,midi2f(n),.5,.09*ag,layerG.arp); }
+        pluck(t+i*s16,midi2f(n),.5,(.06+.014*i)*ag,layerG.arp); }
     }
     const pg=gv('pad');
     if(chordStart&&bar%2===0&&pg>0) padChord(t,cn,spb*8,.045*pg,spb*2,P);
@@ -4669,6 +4897,7 @@ function chordAtGenre(bar,G){ const p=G.prog; return p[Math.floor(bar/(G.chordBa
 function scheduleBeatGenre(t,b,P){
   const G=P.def, sc=SCALES[G.scale], spb=60/P.tempo, s16=spb/4;
   const bar=Math.floor(b/4), sub=b%4;
+  ctxTexture(P,t,spb,bar,sub);
   const entry=chordAtGenre(bar,G);
   const sec=sectionOf(bar), lift=sec==='B'?1.15:1;
   const ug=P.prof.gains, D=P.drumsX;
@@ -4807,11 +5036,12 @@ function scheduleBeatGenre(t,b,P){
     /* ジャンルのボイシング方言（shell/funk9/guide/open/triadHi/darkShell） */
     let cnC=(G.shell||G.voicing)?voicingFor(G,sc,entry):cnV;
     const inst=(tt,n,dur,gain)=>{
-      if(samplesOn()&&acoustic){
-        /* 音響系: 伴奏も実サンプルのみ（ユーザー指定 > ジャンル標準） */
-        const gm=(ci!=='default'&&COMP_GM[ci])||GENRE_COMPGM[S.genre]||'acoustic_grand_piano';
+      const gmTry=(ci!=='default'&&COMP_GM[ci])||GENRE_COMPGM[S.genre]||GENRE_COMPGM_X[S.genre];
+      if(samplesOn()&&(acoustic||GENRE_COMPGM_X[S.genre])&&gmTry){
+        const gm=gmTry||'acoustic_grand_piano';
         if(sampleReady(gm)){ if(playSample(gm,tt,midi2f(n),dur,gain*1.2,layerG.pad)) return; }
-        loadGM(gm); return;                               // シンセを鳴らさない
+        loadGM(gm);
+        if(acoustic) return;                              /* 音響系のみ無音待ち、ハイブリッドはシンセで継続 */
       }
       if(ci!=='default'){ compChordNote(ci,tt,midi2f(n),dur,gain,layerG.pad); return; }
       if(c.wave==='keys') keys(tt,midi2f(n),dur,gain,layerG.pad);
@@ -5304,10 +5534,16 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id==='scr-'+t.dataset.s));
   if(t.dataset.s==='stats')renderStats(); if(t.dataset.s==='chap')renderChapters();
 });
-$('weatherSel').onchange=e=>{S.ctx.weather=e.target.value; updateNow();};
-$('moveSel').onchange=e=>{S.ctx.move=e.target.value; updateNow();};
+$('weatherSel').onchange=e=>{S.ctx.weather=e.target.value; updateNow();
+  const jp={clear:'晴れ — 音を少し開いて前へ',cloudy:'くもり — 彩度を落として柔らかく',rain:'雨 — 残響の膜と雨のテクスチャ、音数を減らして',night_clear:'星空 — 遠くまで響く静けさに'}[e.target.value];
+  if(typeof typeLog==='function')typeLog([`> mood.weather: ${e.target.value}`,`  ${jp}`]); save&&save();};
+$('moveSel').onchange=e=>{S.ctx.move=e.target.value; updateNow();
+  const jp={still:'滞在 — 腰を落ち着けた音に',walk:'歩行 — 歩幅に合わせて弾ませる',train:'電車 — 揺れと車窓の流れを乗せる',run:'走行 — 心拍に合わせて前傾'}[e.target.value];
+  if(typeof typeLog==='function')typeLog([`> mood.move: ${e.target.value}`,`  ${jp}`]); save&&save();};
 $('masterVol').oninput=e=>{ masterVolVal=e.target.value/100; };
 $('sampSel').onchange=e=>{ S.samples=e.target.value==='on'; save(); toast(S.samples?'生楽器サンプルを使用します':'シンセ音のみで演奏します'); };
+$('aiKeyInput').oninput=e=>{ S.aiKey=e.target.value.trim(); aiNoticeShown=false; save(); };
+$('aiModelSel').onchange=e=>{ S.aiModel=e.target.value; save(); toast('AIの頭脳: '+(e.target.value==='opus'?'Opus 4.8（高性能）':'Sonnet 4.6')); };
 $('qrBtn').onclick=()=>{
   const modal=$('qrModal'), note=$('qrNote'), cv=$('qrCv');
   modal.classList.add('show');
@@ -5363,7 +5599,7 @@ function renderSync(){
   $('syncArc').style.strokeDashoffset=169.6*(1-s/100);
   $('syncHint').textContent = s<10?'聴いた時間と対話が、AIの理解になります': s<40?'あなたのリズムを学び始めています': s<70?'あなたらしい音の輪郭が見えてきました':'ほぼシンクロしています。章の変化に注目';
 }
-setInterval(()=>{ if(S.playing){ S.profile.listenSec+=5; renderSync(); if(S.profile.listenSec%60===0)save(); } },5000);
+setInterval(()=>{ if(S.playing){ S.profile.listenSec+=5; renderSync(); if(S.profile.listenSec%60===0){ voteStyle(styleName(),.15); save(); } } },5000);
 /* ===== LIVEモード v2.7 =====
    GPSの移動速度から活動（静止/歩行/ラン/乗り物）を判定し、
    活動×時間帯でBGMを自動選曲。チャットはどんな抽象的な言葉
@@ -5423,15 +5659,16 @@ function liveFix(pos){
   liveStatusUI();
 }
 function liveStatusUI(){
-  const el=document.getElementById('liveAct'), sub=document.getElementById('liveSub');
+  const el=document.getElementById('liveAct'), st=document.getElementById('liveStyle');
   if(!el)return;
-  el.textContent=ACT_JP[live.activity]||ACT_JP.unknown;
-  sub.textContent=live.on
-    ? `速度 ${live.speed.toFixed(1)}m/s ・ ${({morning:'朝',day:'昼',evening:'夕',night:'夜'})[daypartNow()]} ・ いま: ${styleName()}`
-    : 'GPSで活動を判定し、BGMを自動で合わせます';
+  el.textContent=(ACT_JP[live.activity]||ACT_JP.unknown).split(' ')[0];  /* 絵文字だけ */
+  st.textContent=live.on ? styleName() : 'LIVE待機中';
+  st.title=live.on?`${ACT_JP[live.activity]} ・ ${live.speed.toFixed(1)}m/s`:'';
 }
 function liveMaybeSwitch(){
-  const pick=styleForActivity(live.activity,daypartNow());
+  let pick=styleForActivity(live.activity,daypartNow());
+  const learned=ctxBestStyle();
+  if(learned){ if(GENRES[learned])pick=['genre',learned]; else if(MODES[learned])pick=['world',learned]; }
   if(!pick)return;
   const key=pick[0]+':'+pick[1];
   if(live.lastApplied===key)return;
@@ -5467,7 +5704,7 @@ function scheduleNextAsk(){
 }
 function startLive(){
   live.on=true; initAudio(); if(AC.state==='suspended')AC.resume();
-  document.getElementById('liveToggle').textContent='■ LIVE停止';
+  document.getElementById('liveToggle').textContent='■';
   if(navigator.geolocation){
     live.watchId=navigator.geolocation.watchPosition(liveFix,
       err=>{ addLiveMsg('sys','GPSが使えないため、時刻と会話だけで判定します（'+err.message+'）'); live.activity='unknown'; liveStatusUI(); },
@@ -5479,12 +5716,65 @@ function startLive(){
 }
 function stopLive(){
   live.on=false;
-  document.getElementById('liveToggle').textContent='▶ LIVE開始';
+  document.getElementById('liveToggle').textContent='▶';
   if(live.watchId!=null&&navigator.geolocation)navigator.geolocation.clearWatch(live.watchId);
   clearTimeout(live.askTimer);
   live.activity='unknown'; liveStatusUI();
 }
 /* ---- LIVEチャット: あらゆる抽象概念に応答する ---- */
+/* ===== 感情抽出エンジン v2.9 =====
+   言葉から感情ベクトルを推定し、混在（怒り+挨拶=和やかアングリー等）も
+   ブレンドして必ず音にする。解釈不能でも言葉の手触りから推測して必ず変える。 */
+const EMO_LEX={
+  anger:['くそ','クソ','糞','ムカ','むか','最悪','うるさ','イライラ','いらいら','キレ','ふざけ','怒','ぶち'],
+  joy:['嬉','うれし','楽し','たのし','最高','好き','幸','わくわく','ワクワク','やった','気分がいい','ハッピー'],
+  sad:['悲し','かなし','泣','切な','せつな','失恋','さみし','寂し','虚し','むなし','落ち込'],
+  tired:['疲れ','つかれ','だる','ダル','眠','ねむ','しんど','限界','へとへと'],
+  tense:['緊張','不安','こわ','怖','ざわざわ','ドキドキ','落ち着かない','プレッシャー','心配'],
+  calm:['落ち着','静か','しずか','ゆっくり','穏やか','おだやか','リラックス','まったり','癒'],
+  hype:['アガ','あが','盛り上','テンション','パーティ','踊','ノリノリ','ぶち上げ','フェス'],
+  nostalgia:['懐かし','なつかし','思い出','昔','祖母','祖父','子供の頃','故郷','あの頃'],
+  love:['恋','愛','会いたい','デート','ときめ','キュン'],
+  greet:['こんにちは','こんにちわ','おはよう','こんばんは','やあ','ハロー','hello','おっす','ちわ'],
+  silly:['うんこ','ウンコ','うんち','おなら','鼻くそ','ばか','バカ','あほ','アホ','くだらな','笑','ｗｗ','ww','草','ぷぷ','変な','へんな'],
+  creepy:['気色悪','きしょ','キショ','不気味','きも','キモ','ぞっと','ゾッ','呪','ホラー','背筋'],
+};
+const EMO_MUS={
+  anger:{styles:['Metal','Punk','Funk'],ops:{tempoDelta:8,brightDelta:-.02},drive:.85,word:'怒り'},
+  joy:{styles:['Ska','Disco','J-Pop'],ops:{tempoDelta:4,brightDelta:.1},drive:.6,word:'よろこび'},
+  sad:{styles:['Neo Soul','Blues','Ambient'],ops:{tempoDelta:-8,brightDelta:-.1,reverbDelta:.14},drive:.25,word:'かなしみ'},
+  tired:{styles:['Lo-fi House','Bossa Nova','Ambient'],ops:{tempoDelta:-10,densityDelta:-.18},drive:.2,word:'疲れ'},
+  tense:{styles:['Lo-fi House','Ambient','Bossa Nova'],ops:{tempoDelta:-6,densityDelta:-.12,reverbDelta:.1},drive:.2,word:'緊張'},
+  calm:{styles:['Bossa Nova','Ambient','Acid Jazz'],ops:{tempoDelta:-6,densityDelta:-.12},drive:.3,word:'静けさ'},
+  hype:{styles:['EDM','Funk House','Drum & Bass'],ops:{tempoDelta:10,brightDelta:.08},drive:.85,word:'高揚'},
+  nostalgia:{styles:['City Pop','Soul','Acid Jazz'],ops:{reverbDelta:.16,brightDelta:-.06},drive:.35,word:'郷愁'},
+  love:{styles:['R&B','Neo Soul','City Pop'],ops:{tempoDelta:-2,reverbDelta:.1},drive:.4,word:'ときめき'},
+  greet:{styles:['Ska','Country','Nu Disco'],ops:{brightDelta:.08},drive:.55,word:'挨拶の朗らかさ'},
+  silly:{styles:['Ska','Funk','Nu Disco'],ops:{tempoDelta:5,brightDelta:.06},drive:.65,word:'おふざけ'},
+  creepy:{styles:['Horror'],ops:{tempoDelta:-6,brightDelta:-.16,reverbDelta:.2},drive:.3,word:'不気味さ'},
+};
+function emoScan(text){
+  const hits=[];
+  for(const emo in EMO_LEX){
+    let n=0, first=null;
+    for(const w of EMO_LEX[emo]) if(text.includes(w)){ n++; if(!first)first=w; }
+    if(n) hits.push([emo,n,first]);
+  }
+  hits.sort((a,b)=>b[1]-a[1]);
+  return hits.slice(0,2).map(h=>({e:h[0],w:h[2]}));
+}
+function textHash(t){ let h=0; for(let i=0;i<t.length;i++) h=((h*31)+t.charCodeAt(i))>>>0; return h; }
+/* どんな謎テキストにも音を返すためのムード盤 */
+const GUESS_WHEEL=[
+  ['Ska','跳ねた明るさ',{tempoDelta:4,brightDelta:.06}],
+  ['Acid Jazz','粘りのある余裕',{tempoDelta:-2}],
+  ['City Pop','夜風のドライブ',{reverbDelta:.1}],
+  ['Funk House','前のめりの熱',{tempoDelta:6}],
+  ['Bossa Nova','肩の力が抜けた昼',{tempoDelta:-4,densityDelta:-.1}],
+  ['Neo Soul','低めの体温',{tempoDelta:-6,reverbDelta:.08}],
+  ['Country','乾いた陽気さ',{brightDelta:.08}],
+  ['Synthwave','歩幅の大きい夜',{tempoDelta:2,brightDelta:-.04}],
+];
 const POS_WORDS=['嬉し','楽し','最高','気分がいい','晴れ','わくわく','好き','幸せ','元気'];
 const NEG_WORDS=['疲れ','悲し','つら','辛','不安','緊張','落ち着かない','嫌','イライラ','こわ','怖','寂し','ざわざわ'];
 const CALM_WORDS=['落ち着','静か','ゆっくり','穏やか','リラックス','眠'];
@@ -5496,8 +5786,8 @@ function localLive(text){
   const ops=ch.ops||[]; let ex=[]; const actions=[];
   if(ch.explanation&&ch.applied!==false&&(ops.length||ch.melody||ch.gains||ch.drums)) ex.push(ch.explanation);
   /* 返事チップへの応答 */
-  if(has('合ってる','ぴったり','いい感じ')){ ex=['よかった。この方向で続けます']; pushLiveNote('好評: '+styleName()); }
-  else if(has('ちょっと違う','違う感じ','変えて')){
+  if(has('合ってる','ぴったり','いい感じ')){ ex=['よかった。この文脈ではこの方向を覚えておきます']; pushLiveNote('好評: '+styleName()); voteStyle(styleName(),2); }
+  else if(has('ちょっと違う','違う感じ','変えて')){ voteStyle(styleName(),-1.5);
     const alt=S.src==='genre'?['City Pop','Lo-fi','R&B','Bossa Nova','House'].find(g=>g!==S.genre):null;
     if(alt){ actions.push({type:'setStyle',src:'genre',name:alt}); ex=['了解です。空気を変えて '+alt+' を試します。また教えてください']; }
   }
@@ -5517,8 +5807,40 @@ function localLive(text){
   else if(has('雨')){ actions.push({type:'context',weather:'rain'}); ops.push({path:'reverbDelta',op:'set',value:.12}); ex=['雨の膜を音にかけました']; }
   else if(has('作業','集中','勉強','仕事')){ actions.push({type:'setStyle',src:'world',name:'Lo-fi'}); ex=['集中の邪魔をしない音に切り替えます']; }
   else if(!ex.length){
-    /* どんな言葉でも受け止める: 解釈できない時は質問で返す */
-    return {actions:[],ops:[],ask:'その感じ、もう少しだけ教えてください——それは動きたい気分ですか、とどまりたい気分ですか？',explanation:'（あなたの言葉を音に翻訳しようとしています）'};
+    /* 感情ブレンド: 混在も両方音にする。「もっと」は直前の感情を増幅 */
+    const intensify=text.includes('もっと')||text.includes('さらに');
+    let emos=emoScan(text);
+    let escalate=false;
+    if(!emos.length&&intensify&&live.lastEmos&&live.lastEmos.length){ emos=live.lastEmos; escalate=true; }
+    if(emos.length){
+      live.lastEmos=emos;
+      const k=intensify?(escalate?1.7:1.35):1;
+      const e1=EMO_MUS[emos[0].e], e2=emos[1]?EMO_MUS[emos[1].e]:null;
+      const h=textHash(text);
+      const vessel=(e2&&['joy','greet','calm','nostalgia','love'].includes(emos[1].e))?e2:e1;
+      const idx=(h+(escalate?1:0))%vessel.styles.length;
+      const style=vessel.styles[idx];
+      if(GENRES[style])actions.push({type:'setStyle',src:'genre',name:style});
+      else if(MODES[style])actions.push({type:'setStyle',src:'world',name:style});
+      const blend=(f)=>((e1.ops[f]||0)+(e2?(e2.ops[f]||0):0))/(e2?2:1)*k;
+      for(const f of ['tempoDelta','brightDelta','reverbDelta','densityDelta']){
+        const v=blend(f); if(v) ops.push({path:f,op:'set',value:Math.round(v*100)/100});
+      }
+      ops.push({path:'perf.drive',op:'set',value:Math.round(((e1.drive+(e2?e2.drive:e1.drive))/2)*100)/100});
+      const q1=emos[0].w?`「${emos[0].w}」`:e1.word;
+      ex=[e2
+        ? `${q1}と「${emos[1].w||''}」、両方受け取りました。${e2.word}の器に${e1.word}の熱を注いで、${style}でぶつけます`
+        : escalate
+          ? `さらに深く。${e1.word}を増幅して、${style}に踏み込みます`
+          : `${q1}ときましたか。${e1.word}は音で返します——${style}で`];
+    } else {
+      /* 完全に未知の言葉: 手触りから推測して、それでも必ず変える */
+      const g=GUESS_WHEEL[textHash(text)%GUESS_WHEEL.length];
+      live.lastEmos=null;
+      actions.push({type:'setStyle',src:'genre',name:g[0]});
+      for(const f in g[2]) ops.push({path:f,op:'set',value:g[2][f]});
+      ex=[`「${text.slice(0,14)}」…その言葉の手触りは「${g[1]}」だと感じました。勘違いなら勘違いのまま、${g[0]}を当ててみます。違ったらまた言ってください`];
+    }
   }
   return {actions,ops,explanation:ex.join('。')+'。',moodNote:text.slice(0,60)};
 }
@@ -5549,15 +5871,14 @@ async function aiLive(text){
 状況: 活動=${ACT_JP[live.activity]}, 速度=${live.speed.toFixed(1)}m/s, 時間帯=${daypartNow()}, 再生中=${styleName()}, 文脈=${ctxLabel()}
 最近の気分メモ: ${moods}
 使える道具: スタイル切替(ジャンル: ${Object.keys(GENRES).join('/')} 世界観: ${Object.keys(MODES).join('/')}), 任意ops(${Object.keys(OPS_PATHS).join(' ')}), 文脈(weather/move)。
-判断に迷ったら ask に短い確認質問を1つ入れてよい（例: いまの音楽は合っていますか？）。
+絶対規則: 「わからない」「確認だけ」は禁止。誤読でもよいから必ずactionsかopsで音を変えること。
+感情が混在する言葉（例:「くそこんにちは」=怒り+挨拶）は両方をブレンドして音にする——明るい器に怒りの熱を注ぐ「和やかアングリー」のように。罵倒や無意味な言葉も、その温度と手触りを音に翻訳する。
+askは音を変えた上で添える追加質問としてのみ可。
 必ずJSONのみ:
 {"actions":[{"type":"setStyle","src":"world|genre","name":"名前"}|{"type":"context","weather":"...","move":"..."}|{"type":"play"}|{"type":"stop"}],
  "ops":[{"path":"...","op":"set|mul|add","value":...}],
  "moodNote":"記録する一言(任意)","ask":"追加の質問(任意)","explanation":"何をしたか日本語2文以内"}`;
-  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:900,system:sys,messages:[{role:'user',content:text}]})});
-  const data=await r.json();
-  const raw=(data.content||[]).map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
+  const raw=await aiCall(sys,text,900);
   return JSON.parse(raw);
 }
 async function sendLive(text){
@@ -5566,10 +5887,11 @@ async function sendLive(text){
   addLiveMsg('user',text);
   const inp=document.getElementById('liveInput'); if(inp)inp.value='';
   let res=null;
-  try{ res=await aiLive(text); }catch(e){ res=localLive(text); }
+  try{ res=await aiLive(text); }catch(e){ aiFellBack('live'); res=localLive(text); }
   snapshot();
   applyLiveActions(res.actions);
   if(Array.isArray(res.ops)&&res.ops.length) applyOps(res.ops,prof());
+  learnFromOps(res.ops);
   if(res.moodNote) pushLiveNote(res.moodNote);
   refreshStyleUI();
   addLiveMsg('ai',res.explanation||'音に移しました。');
@@ -5924,6 +6246,7 @@ function updateSyncUI(){
 }
 document.getElementById('syncPlay').onclick=()=>{
   if(pendingStyle){
+    voteStyle(pendingStyle.name,1);
     S.src=pendingStyle.src;
     if(pendingStyle.src==='genre')S.genre=pendingStyle.name; else S.mode=pendingStyle.name;
     motifCache={}; phraseCache={}; riffCache={}; bebopCache={}; lastVoicing={};
@@ -5981,10 +6304,7 @@ voice.on(bool) voice.gender(female|male|duet) voice.amount(0.1~1.8) voice.breath
 
 再生中=${styleName()}, 文脈=${ctxLabel()}
 世界観モード: ${Object.keys(MODES).join(', ')} / ジャンル: ${Object.keys(GENRES).join(', ')}`;
-  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1200,system:sys,messages:[{role:'user',content:text}]})});
-  const data=await r.json();
-  const raw=(data.content||[]).map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
+    const raw=await aiCall(sys, text, 1100);
   const parsed=JSON.parse(raw);
   /* ops形式をchanges形式に包んで既存フローへ */
   return {changes:{ops:parsed.ops||[], mode:parsed.mode, genre:parsed.genre}, explanation:parsed.explanation};
@@ -6005,6 +6325,7 @@ async function sendChat(text){
   pp.notes=(pp.notes||[]); pp.notes.push(text.slice(0,64)); pp.notes=pp.notes.slice(-8);
   refreshTargetUI();
   if(_wait)_wait.classList.remove('on');
+  learnFromOps(res.ops); voteStyle(styleName(),.3);
   addMsg('ai',(res.explanation||'反映しました。')+`（${appliedKey.slice(2)} に保存）`);
   logChange(`[${appliedKey.slice(2)}] `+(res.explanation||text)); save();
 }
@@ -6122,7 +6443,7 @@ function renderStats(){
 (async()=>{
   await load();
   setTimeout(()=>{ if(typeof renderChatLog==='function')renderChatLog(); },50);
-  setTimeout(()=>toast('WMB v2.8 を起動しました'),400);
+  setTimeout(()=>toast('WMB v3.0 を起動しました'),400);
   if($('sampSel')) $('sampSel').value=(S.samples!==false)?'on':'off';
   syncSrcUI(); refreshStyleUI(); renderSync();
   setInterval(updateNow,60000);
