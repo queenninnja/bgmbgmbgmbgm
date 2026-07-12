@@ -167,7 +167,7 @@ header{padding:14px 18px 6px; display:flex; justify-content:space-between; align
 /* v2.9: アプリ的な固定UI（ページ全体の上下スクロール禁止） */
 html,body{height:100%; overflow:hidden; overscroll-behavior:none}
 body{position:fixed; inset:0; width:100%}
-#scr-home.active{overflow:hidden}
+#scr-home.active{overflow-y:auto; -webkit-overflow-scrolling:touch}
 #scr-chat.active{display:flex; flex-direction:column; overflow:hidden}
 #scr-chat #chatLog{flex:1 1 auto; min-height:100px; overflow-y:auto}
 #scr-live.active{display:flex; flex-direction:column; overflow:hidden}
@@ -249,7 +249,7 @@ nav{
       <button id="miniViz" aria-label="待ち受け表示を開く"><canvas id="miniC"></canvas></button>
     </div>
     <div id="nowTitle">タップして、あなたのBGMを始める</div>
-    <div style="text-align:center;font-size:10px;letter-spacing:2px;color:var(--dim);margin-top:2px">WMB v3.2</div>
+    <div style="text-align:center;font-size:10px;letter-spacing:2px;color:var(--dim);margin-top:2px">WMB v3.6</div>
     <div id="nowSub">世界には、まだあなたのBGMがない</div>
 
     <div class="seg" id="srcSeg">
@@ -2745,7 +2745,54 @@ var qrcode = function() {
 
 </script>
 <script>
-/* ================= WMB Prototype v3.2 =================
+/* ================= WMB Prototype v3.6 =================
+   v3.6「世界観のシンセ撤廃」:
+   - 「譜面だけ違うシンセ」の根治: 世界観エンジンの入口で
+     発音関数(tone/keys/pluck/padChord/playLead)を実楽器
+     ルーティング版に差し替え。音響系モードはシンセ発音禁止
+     （未デコード中は無音、起動時一括デコードで一瞬）。
+   - 情景アンサンブル表: 森/瞑想/朝焼け=フルート+生ピアノ+
+     ナイロン+ウッドベース, 図書館=まばらな生ピアノ,
+     黄昏/Movie/Adventure=トランペット+ピアノ, 喫茶店=
+     ナイロン+ピアノ, 終電/Lo-fi=エレピ, Horror=オルガン,
+     aggressive=エレキ——モード個別上書きつき。
+   - 電子が正装のモード(cyberpunk/scifi/chip系: 都会の夜/
+     高速道路/夜勤/未来/RPG等)のみシンセ維持。
+   - トゥルースメーター: 世界観でも「🎻生楽器アンサンブル
+     演奏中（n音/秒・シンセ0）」を実測表示。
+   v3.5「意味エンジン」:
+   - 正規化層 normJa: カタカナ→ひらがな・全角→半角統一
+     （俺/おれ/オレの表記ゆれを恒久解決）。
+   - カテゴリ辞書を49群・683語に拡張（指定の400語を超過）。
+     鮭→「銀の身をぼろぼろにしても遡る、力強さと健気さ」等、
+     各群に手書きの情景文。長い語優先マッチ。
+   - 意味軸エンジン: 湿/乾・熱/冷・速/遅・明/暗を語感から
+     検出し音響へ直結（濡→残響+、熱→テンポ+畳みかけ…）。
+     情景文との矛盾検査つき——「濡れた」に「乾いた」を返す
+     事故を構造的に禁止。
+   v3.4「断言体」:
+   - 人格テンプレートがひらがな「おれ」を見ておらず全滅して
+     いたバグを修正（おれ/ぼく/あたし/ワイ等+「が」も対応）。
+     「消しかす男爵だ」のような代名詞なしの名乗りも検出
+     （男爵/卿/マン/ブレイカー/主人公…の称号で判定）。
+   - 気配カテゴリ辞書VIBES新設: 疾走/勇者/観測者/闇貴族/光/
+     機械/動物——人格にも一般文にも適用し、当てずっぽうを削減。
+   - 口調の全面矯正: 「勘違いなら勘違いのまま」「違ったらまた
+     言ってください」を全廃し断言体へ（「——◯◯。{style}で
+     いきます」）。「お大事に」「誰かに話してみて」等の同情句も
+     全廃——重い言葉には音の設計で応える。AIプロンプトにも
+     同じ口調規則を明記。
+   v3.3「想像力の底上げ」:
+   - 起動トーストはバージョンが変わった時のみ（毎回の通知停止）。
+   - ホーム画面のスクロールを復活（縦に全部見られる）。
+   - ローカル脳の語彙追加: 陽だまり系（日向ぼっこ→Bossa/
+     昼下がり）、心の重さ系（うつ/鬱→茶化さず静かに寄り添う
+     特別な言い回し）、闇の貴族系（伯爵/神/ゴシック→Horror/
+     Metal/真夜中、シックな口上）。
+   - 人格宣言テンプレート:「俺は◯◯」→名前から気配を読んで
+     情景を宣言し音を仕立てる（角材伯爵への一歩）。
+   - AIプロンプトに「角材伯爵」の模範解答を焼き込み——
+     APIキー接続時は常にこの想像力水準で応答する。
    v3.2「バナーの行儀」:
    - 更新バナーに✕を追加。✕（または更新タップ）でその
      バージョンをスヌーズ登録し、二度と表示しない（永続）。
@@ -3560,14 +3607,14 @@ function prof(k){ const key=k||curKey();
 function isTuned(key){ const p=S.profiles[key]; if(!p)return false; return JSON.stringify(p,stripNotes)!==(p._base||DEFPROF_JSON); }
 function styleName(){ return S.src==='genre'?S.genre:S.mode; }
 
-async function save(){ try{ if(window.storage) await window.storage.set('wmb:v2', JSON.stringify({v:26, updSnooze:S.updSnooze||'', aiKey:S.aiKey||'', aiModel:S.aiModel||'sonnet', profile:S.profile, profiles:S.profiles, mode:S.mode, genre:S.genre, src:S.src, samples:S.samples!==false})); }catch(e){} }
+async function save(){ try{ if(window.storage) await window.storage.set('wmb:v2', JSON.stringify({v:26, lastBootVer:S.lastBootVer||'', updSnooze:S.updSnooze||'', aiKey:S.aiKey||'', aiModel:S.aiModel||'sonnet', profile:S.profile, profiles:S.profiles, mode:S.mode, genre:S.genre, src:S.src, samples:S.samples!==false})); }catch(e){} }
 async function load(){ try{ if(window.storage){ const r=await window.storage.get('wmb:v2'); if(r&&r.value){ const d=JSON.parse(r.value);
       if((d.v||0)<26){ /* 旧バージョンの保存状態（シンセ指定等）を破棄 */
         S.profiles={}; S.src='genre'; S.genre='Jazz';
         Object.assign(S.profile,{chapters:(d.profile&&d.profile.chapters)||[]});
         setTimeout(()=>toast('新バージョンのため音の設定を初期化しました（章は保持）'),800);
       } else {
-      Object.assign(S.profile,d.profile||{}); S.profiles=d.profiles||{}; S.mode=d.mode||S.mode; S.genre=d.genre||S.genre; S.src=d.src||S.src; S.samples=d.samples!==false; } S.aiKey=d.aiKey||''; S.aiModel=d.aiModel||'sonnet'; S.updSnooze=d.updSnooze||''; const ki=document.getElementById('aiKeyInput'); if(ki)ki.value=S.aiKey; const ms2=document.getElementById('aiModelSel'); if(ms2)ms2.value=S.aiModel; } } }catch(e){}
+      Object.assign(S.profile,d.profile||{}); S.profiles=d.profiles||{}; S.mode=d.mode||S.mode; S.genre=d.genre||S.genre; S.src=d.src||S.src; S.samples=d.samples!==false; } S.aiKey=d.aiKey||''; S.aiModel=d.aiModel||'sonnet'; S.updSnooze=d.updSnooze||''; S.lastBootVer=d.lastBootVer||''; const ki=document.getElementById('aiKeyInput'); if(ki)ki.value=S.aiKey; const ms2=document.getElementById('aiModelSel'); if(ms2)ms2.value=S.aiModel; } } }catch(e){}
   /* 旧バージョンのプロファイルに新フィールドを補完 */
   for(const k in S.profiles){ const p=S.profiles[k];
     p.leadInst=LEADINSTS.includes(p.leadInst)?p.leadInst:'default';
@@ -3737,7 +3784,23 @@ function duck(t){
 }
 
 /* ===== 楽器 ===== */
+/* 世界観サンプルルータ: 音響系モードでは旋律系レイヤーの合成音を実楽器へ差し替え */
+function worldRoute(t,f,dur,gain,dest,kind){
+  if(S.src!=='world')return false;
+  const e=(typeof worldEns==='function')?worldEns():null;
+  if(!e)return false;
+  let gm=null,mul=1,minDur=.25;
+  if(dest===layerG.bass){gm=e.bass;mul=2.2;minDur=.3;}
+  else if(dest===layerG.pad){gm=e.pad;mul=1.7;minDur=.8;}
+  else if(dest===layerG.arp){gm=e.arp;mul=2.0;}
+  else if(dest===layerG.mel){gm=e.mel;mul=1.8;minDur=.3;}
+  else return false;
+  if(sampleReady(gm)){ playSample(gm,t,f,Math.max(dur,minDur),gain*mul,dest); }
+  else loadGM(gm,gm.includes('bass'));
+  return true;   /* 音響系モード: 未デコード中も合成音は出さない */
+}
 function tone(t,f,dur,type,gain,dest,detune=0,attack=.01){
+  if(worldRoute(t,f,dur,gain,dest))return;
   countOsc(dest);
   const o=AC.createOscillator(), g=AC.createGain();
   o.type=type; o.frequency.value=f; o.detune.value=detune;
@@ -3746,11 +3809,14 @@ function tone(t,f,dur,type,gain,dest,detune=0,attack=.01){
   o.connect(g); g.connect(dest); o.start(t); o.stop(t+Math.max(dur,attack)+.06);
 }
 function keys(t,f,dur,gain,dest,attack=.008){
+  if(worldRoute(t,f,dur,gain,dest))return;
+  countOsc(dest);
   tone(t,f,dur,'sine',gain*.7,dest,0,attack);
   tone(t,f*2,dur*.7,'sine',gain*.28,dest,0,attack);
   tone(t,f*3,dur*.35,'sine',gain*.1,dest,0,attack);
 }
 function pluck(t,f,dur,gain,dest){
+  if(worldRoute(t,f,dur,gain,dest))return;
   tone(t,f,Math.min(dur,.5),'triangle',gain*.75,dest,0,.004);
   tone(t,f,Math.min(dur*.5,.2),'sawtooth',gain*.3,dest,4,.004);
 }
@@ -4231,6 +4297,15 @@ function expressive(tt,f,dur,gain,dest,o){
 }
 /* メロディ音色ディスパッチャ v1.1: 27音色 */
 function playLead(inst,tt,f,dur,gain,dest){
+  if(S.src==='world'){
+    const e=(typeof worldEns==='function')?worldEns():null;
+    if(e){
+      const gm=INST_GM[inst]||e.mel;
+      if(sampleReady(gm)) playSample(gm,tt,f,dur,gain*1.6,dest,EXPR[inst]);
+      else loadGM(gm);
+      return;
+    }
+  }
   /* 音響系ジャンル: 実楽器サンプルのみ。デコード完了までは無音
      （内蔵サンプルは起動時に一括デコードされるため空白は一瞬） */
   const gm=INST_GM[inst];
@@ -4697,6 +4772,16 @@ function fillLib(t,spb,gain,dest,type,kg){
 
 /* 世界観パッドの伴奏楽器上書き */
 function padChord(t,notes,dur,gain,attack,P){
+  if(S.src==='world'){
+    const e=(typeof worldEns==='function')?worldEns():null;
+    if(e){
+      notes.forEach((n,ix)=>{
+        if(sampleReady(e.pad)) playSample(e.pad,t+ix*.018,midi2f(n),Math.min(dur,2.2),gain*1.5,layerG.pad);
+        else loadGM(e.pad);
+      });
+      return;
+    }
+  }
   const key='W:'+S.mode;
   const v=polishVoicing(voiceLead(key,notes));
   const ci=P.prof.compInst||'default';
@@ -4709,6 +4794,34 @@ function padChord(t,notes,dur,gain,attack,P){
   else v.forEach(n=>compChordNote(ci,t,midi2f(n),dur,gain*1.3,layerG.pad));
 }
 /* ===== 世界観BGMエンジン ===== */
+/* ===== 世界観の実楽器アンサンブル v3.6 =====
+   「譜面だけ違うシンセ」を撤廃。モードごとに情景の編成を定義し、
+   電子が正装のモード(cyberpunk/scifi/chip)以外はシンセ発音を禁止。 */
+const WORLD_ELECTRO=new Set(['cyber','scifi','rpg']);
+const ENS_BY_STYLE={
+  relax:     {mel:'flute',pad:'acoustic_grand_piano',arp:'acoustic_guitar_nylon',bass:'acoustic_bass'},
+  lofi:      {mel:'electric_piano_1',pad:'electric_piano_1',arp:'acoustic_guitar_nylon',bass:'electric_bass_finger'},
+  fantasy:   {mel:'flute',pad:'acoustic_grand_piano',arp:'acoustic_guitar_nylon',bass:'acoustic_bass'},
+  movie:     {mel:'trumpet',pad:'acoustic_grand_piano',arp:'acoustic_grand_piano',bass:'acoustic_bass'},
+  adventure: {mel:'trumpet',pad:'acoustic_grand_piano',arp:'acoustic_guitar_steel',bass:'acoustic_bass'},
+  horror:    {mel:'drawbar_organ',pad:'drawbar_organ',arp:'acoustic_grand_piano',bass:'acoustic_bass'},
+  aggro:{mel:'electric_guitar_clean',pad:'electric_guitar_clean',arp:'electric_guitar_clean',bass:'electric_bass_finger'},
+};
+const ENS_BY_MODE={
+  '図書館':{mel:'acoustic_grand_piano'},'雪':{mel:'flute',pad:'acoustic_grand_piano'},
+  '喫茶店':{mel:'acoustic_guitar_nylon',pad:'acoustic_grand_piano'},'黄昏':{mel:'trumpet'},
+  '海辺':{mel:'flute',arp:'acoustic_guitar_nylon'},'森':{mel:'flute'},
+  '終電':{mel:'electric_piano_1'},'瞑想':{mel:'flute',pad:'acoustic_grand_piano'},
+  '朝焼け':{mel:'flute'},'昼下がり':{mel:'acoustic_guitar_nylon'},
+  '散歩':{mel:'acoustic_guitar_steel'},'真夜中':{mel:'electric_piano_1',pad:'acoustic_grand_piano'},
+  'ホームパーティ':{mel:'electric_piano_1',pad:'electric_piano_1',bass:'electric_bass_finger'},
+};
+function worldEns(){
+  const M=MODES[S.mode]; if(!M)return null;
+  if(WORLD_ELECTRO.has(M.style))return null;
+  const base=ENS_BY_STYLE[M.style]||ENS_BY_STYLE.relax;
+  return Object.assign({},base,ENS_BY_MODE[S.mode]||{});
+}
 function scheduleBeatWorld(t,b,P){
   const M=P.def, sc=SCALES[M.scale], spb=60/P.tempo, s16=spb/4;
   const bar=Math.floor(b/4), sub=b%4;
@@ -5760,6 +5873,9 @@ const EMO_LEX={
   silly:['うんこ','ウンコ','うんち','おなら','鼻くそ','ばか','バカ','あほ','アホ','くだらな','笑','ｗｗ','ww','草','ぷぷ','変な','へんな'],
   creepy:['気色悪','きしょ','キショ','不気味','きも','キモ','ぞっと','ゾッ','呪','ホラー','背筋'],
   pain:['頭痛','頭が痛','痛い','いたい','体調','具合悪','気持ち悪','吐き気','風邪','熱っぽ','めまい','二日酔い','胃が'],
+  sunny:['日向','ひなた','ぽかぽか','陽だまり','縁側','日光浴','ピクニック','木漏れ日','うたた寝','昼寝'],
+  heavy:['うつ','鬱','病ん','メンタル','どん底','絶望','もうだめ','限界','消えたい','死にたい'],
+  dark:['伯爵','貴族','王','魔王','悪魔','闇','葬','城','中世','ゴシック','死んだ神','神','骸','棺'],
 };
 const EMO_MUS={
   anger:{styles:['Metal','Punk','Funk'],ops:{tempoDelta:8,brightDelta:-.02},drive:.85,word:'怒り'},
@@ -5775,6 +5891,9 @@ const EMO_MUS={
   silly:{styles:['Ska','Funk','Nu Disco'],ops:{tempoDelta:5,brightDelta:.06},drive:.65,word:'おふざけ'},
   creepy:{styles:['Horror'],ops:{tempoDelta:-6,brightDelta:-.16,reverbDelta:.2},drive:.3,word:'不気味さ'},
   pain:{styles:['瞑想','Ambient','雨宿り'],ops:{tempoDelta:-10,densityDelta:-.2,brightDelta:-.08,reverbDelta:.06},drive:.15,word:'不調'},
+  sunny:{styles:['Bossa Nova','昼下がり','Country'],ops:{tempoDelta:-2,brightDelta:.1},drive:.35,word:'陽だまりの温度'},
+  heavy:{styles:['Ambient','瞑想','Neo Soul'],ops:{tempoDelta:-12,densityDelta:-.22,brightDelta:-.1,reverbDelta:.1},drive:.12,word:'心の重さ'},
+  dark:{styles:['Horror','Metal','真夜中'],ops:{tempoDelta:-4,brightDelta:-.12,reverbDelta:.16},drive:.5,word:'闇の威厳'},
 };
 function emoScan(text){
   const hits=[];
@@ -5786,6 +5905,18 @@ function emoScan(text){
   hits.sort((a,b)=>b[1]-a[1]);
   return hits.slice(0,2).map(h=>({e:h[0],w:h[2]}));
 }
+/* ===== 意味エンジン v3.5: 正規化+意味軸+カテゴリ辞書(683語/49群) ===== */
+function normJa(t){ return (t||'').toLowerCase().replace(/[\u30a1-\u30f6]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60)).replace(/[\uff01-\uff5e]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xfee0)); }
+const VGROUPS={"疾走":{"s":["Drum & Bass","EDM","高速道路"],"i":"風を置き去りにする疾走"},"勇者":{"s":["Adventure","Fantasy","旅立ち"],"i":"物語が始まる高揚"},"観測者":{"s":["図書館","Acid Jazz","Lo-fi House"],"i":"一歩引いて世界を観る静けさ"},"闇貴族":{"s":["Horror","Metal","真夜中"],"i":"重厚な闇の気品"},"光":{"s":["Ska","Nu Disco","昼下がり"],"i":"光をまとう晴れやかさ"},"機械":{"s":["Synthwave","Techno","高速道路"],"i":"鋼と電気の体温"},"小動物":{"s":["昼下がり","Bossa Nova","散歩"],"i":"ふわりとした足取り"},"猛獣":{"s":["Metal","Funk","Rock"],"i":"唸りを潜めた獣の重心"},"海":{"s":["海辺","Bossa Nova","City Pop"],"i":"潮の満ち引きの呼吸"},"遡上":{"s":["Adventure","森","Blues"],"i":"銀の身をぼろぼろにしても遡る、力強さと健気さ"},"空":{"s":["朝焼け","Trance","Ambient"],"i":"どこまでも抜ける高さ"},"雨":{"s":["雨宿り","Lo-fi","Neo Soul"],"i":"水の膜ごしのやわらかさ"},"雪":{"s":["雪","Ambient","瞑想"],"i":"音を吸い込む白さ"},"炎":{"s":["Metal","Funk House","Latin"],"i":"爆ぜる熱"},"夜":{"s":["真夜中","City Pop","都会の夜"],"i":"夜気の深さ"},"朝":{"s":["朝焼け","週末の朝","Country"],"i":"目覚めたての光"},"祭":{"s":["Ska","Latin","ホームパーティ"],"i":"太鼓と提灯の高揚"},"酒場":{"s":["Acid Jazz","Blues","Soul"],"i":"グラスの底の琥珀"},"学び":{"s":["図書館","Lo-fi","瞑想"],"i":"ページをめくる静けさ"},"戦":{"s":["Metal","Punk","Drum & Bass"],"i":"火花の散る間合い"},"恋":{"s":["R&B","Neo Soul","City Pop"],"i":"心拍ひとつぶんの甘さ"},"郷愁":{"s":["City Pop","Soul","終電"],"i":"遠くのレコードの匂い"},"麺":{"s":["Ska","昼下がり","Funk"],"i":"湯気とすすり込む勢い"},"肉":{"s":["Funk","Rock","Blues"],"i":"脂の乗った野太さ"},"甘味":{"s":["Nu Disco","Bossa Nova","昼下がり"],"i":"頬のゆるむ甘さ"},"茶":{"s":["瞑想","図書館","昼下がり"],"i":"湯呑みの中の静けさ"},"職人":{"s":["Acid Jazz","Blues","Jazz House"],"i":"手の内の確かさ"},"旅":{"s":["旅立ち","Adventure","Country"],"i":"荷物ひとつぶんの身軽さ"},"宇宙":{"s":["Ambient","Trance","Sci-Fi"],"i":"無音に近い漆黒の広さ"},"森":{"s":["森","Fantasy","瞑想"],"i":"木漏れ日と土の呼吸"},"山":{"s":["Adventure","森","Country"],"i":"稜線を渡る風"},"都市":{"s":["City Pop","House","都会の夜"],"i":" garasu 越しの人いきれ"},"下町":{"s":["Ska","Soul","Blues"],"i":"路地の湿った夕餉の匂い"},"昭和":{"s":["Soul","City Pop","終電"],"i":"ブラウン管ごしのぬくもり"},"未来":{"s":["Synthwave","Techno","Sci-Fi"],"i":"まだ名前のない光"},"幽玄":{"s":["瞑想","Ambient","Horror"],"i":"輪郭の溶けた気配"},"和風":{"s":["瞑想","森","雪"],"i":"畳と障子の間合い"},"武士":{"s":["Metal","瞑想","Adventure"],"i":"抜刀前の静けさ"},"忍":{"s":["Drum & Bass","Techno","真夜中"],"i":"気配を消した速度"},"魔法":{"s":["Fantasy","Trance","雪"],"i":"詠唱の残光"},"運動":{"s":["EDM","Funk House","Rock"],"i":"心拍の上がる直線"},"筋肉":{"s":["Metal","Funk","EDM"],"i":"力こぶの説得力"},"眠り":{"s":["真夜中","Ambient","瞑想"],"i":"まぶたの裏の遠さ"},"風呂":{"s":["昼下がり","Bossa Nova","瞑想"],"i":"湯気ごと脱力する時間"},"仕事":{"s":["Lo-fi House","図書館","House"],"i":"締切と珈琲の相棒"},"金":{"s":["Disco","Funk House","Nu Disco"],"i":"札束の羽音"},"賭け":{"s":["Acid Jazz","Blues","Funk"],"i":"裏返る一枚の緊張"},"色気":{"s":["Funk","R&B","Neo Soul"],"i":"腰の据わった艶のあるグルーヴ"},"笑い":{"s":["Ska","Nu Disco","Funk"],"i":"吹き出す寸前の口元"}};
+const VWORDS=[["すぴーど","疾走"],["ぶれいかー","疾走"],["たーぼ","疾走"],["まっは","疾走"],["ばくそく","疾走"],["ろけっと","疾走"],["だっしゅ","疾走"],["しっそう","疾走"],["爆走","疾走"],["特急","疾走"],["新幹線","疾走"],["f1","疾走"],["主人公","勇者"],["ゆうしゃ","勇者"],["勇者","勇者"],["冒険","勇者"],["rpg","勇者"],["せんし","勇者"],["戦士","勇者"],["けん","勇者"],["剣","勇者"],["くえすと","勇者"],["らすぼす","勇者"],["でんせつ","勇者"],["伝説","勇者"],["ひーろー","勇者"],["おぶざーばー","観測者"],["観測","観測者"],["けんじゃ","観測者"],["賢者","観測者"],["がくしゃ","観測者"],["学者","観測者"],["せいかん","観測者"],["静観","観測者"],["みまも","観測者"],["見守","観測者"],["ぼうかん","観測者"],["傍観","観測者"],["はくしゃく","闇貴族"],["伯爵","闇貴族"],["だんしゃく","闇貴族"],["男爵","闇貴族"],["きぞく","闇貴族"],["貴族","闇貴族"],["きょう","闇貴族"],["魔王","闇貴族"],["まおう","闇貴族"],["あくま","闇貴族"],["悪魔","闇貴族"],["やみ","闇貴族"],["闇","闇貴族"],["しがい","闇貴族"],["骸","闇貴族"],["しろ","闇貴族"],["城","闇貴族"],["ごしっく","闇貴族"],["わいん","闇貴族"],["葬","闇貴族"],["棺","闇貴族"],["ヴァンパイア","闇貴族"],["きゅうけつ","闇貴族"],["吸血","闇貴族"],["たいよう","光"],["太陽","光"],["はな","光"],["花","光"],["ひかり","光"],["光","光"],["てんし","光"],["天使","光"],["ひめ","光"],["姫","光"],["はる","光"],["春","光"],["にじ","光"],["虹","光"],["きらきら","光"],["まぶし","光"],["眩し","光"],["ろぼ","機械"],["めか","機械"],["さいぼーぐ","機械"],["でんのう","機械"],["電脳","機械"],["ましん","機械"],["あんどろいど","機械"],["ぎあ","機械"],["歯車","機械"],["はぐるま","機械"],["こうじょう","機械"],["工場","機械"],["ねこ","小動物"],["猫","小動物"],["いぬ","小動物"],["犬","小動物"],["うさぎ","小動物"],["くま","小動物"],["ぱんだ","小動物"],["りす","小動物"],["はむすたー","小動物"],["ぺんぎん","小動物"],["こねこ","小動物"],["こいぬ","小動物"],["ひよこ","小動物"],["とら","猛獣"],["虎","猛獣"],["らいおん","猛獣"],["おおかみ","猛獣"],["狼","猛獣"],["くじら","猛獣"],["わし","猛獣"],["鷹","猛獣"],["たか","猛獣"],["さめ","猛獣"],["鮫","猛獣"],["きょうりゅう","猛獣"],["恐竜","猛獣"],["ごりら","猛獣"],["うみ","海"],["海","海"],["なみ","海"],["波","海"],["しお","海"],["潮","海"],["はまべ","海"],["浜辺","海"],["さんご","海"],["珊瑚","海"],["かもめ","海"],["よっと","海"],["ヨット","海"],["しんかい","海"],["深海","海"],["さけ","遡上"],["鮭","遡上"],["しゃけ","遡上"],["さーもん","遡上"],["そじょう","遡上"],["遡上","遡上"],["ぎんざけ","遡上"],["銀鮭","遡上"],["かわのぼり","遡上"],["川登","遡上"],["ますのすけ","遡上"],["いくら","遡上"],["そら","空"],["空","空"],["くも","空"],["雲","空"],["つばさ","空"],["翼","空"],["ひこうき","空"],["飛行機","空"],["ききゅう","空"],["気球","空"],["とぶ","空"],["飛ぶ","空"],["おおぞら","空"],["大空","空"],["あめ","雨"],["雨","雨"],["つゆ","雨"],["梅雨","雨"],["しずく","雨"],["雫","雨"],["こさめ","雨"],["小雨","雨"],["どしゃぶり","雨"],["土砂降","雨"],["あまやど","雨"],["雨宿","雨"],["かさ","雨"],["傘","雨"],["にわかあめ","雨"],["ゆき","雪"],["雪","雪"],["ふぶき","雪"],["吹雪","雪"],["こおり","雪"],["氷","雪"],["つらら","雪"],["しもばしら","雪"],["霜柱","雪"],["ゆきだるま","雪"],["ぱうだーすのー","雪"],["ひょうが","雪"],["氷河","雪"],["ほのお","炎"],["炎","炎"],["ひ","炎"],["火","炎"],["たきび","炎"],["焚き火","炎"],["かじ","炎"],["ばくはつ","炎"],["爆発","炎"],["まぐま","炎"],["ようがん","炎"],["溶岩","炎"],["はなび","炎"],["花火","炎"],["ばーなー","炎"],["よる","夜"],["夜","夜"],["しんや","夜"],["深夜","夜"],["ねおん","夜"],["ネオン","夜"],["がいとう","夜"],["街灯","夜"],["よふかし","夜"],["夜更かし","夜"],["まよなか","夜"],["真夜中","夜"],["よあそび","夜"],["あさ","朝"],["朝","朝"],["あさひ","朝"],["朝日","朝"],["めざめ","朝"],["目覚め","朝"],["あさごはん","朝"],["朝食","朝"],["よあけ","朝"],["夜明け","朝"],["あさやけ","朝"],["朝焼け","朝"],["もーにんぐ","朝"],["まつり","祭"],["祭","祭"],["はなびたいかい","祭"],["みこし","祭"],["神輿","祭"],["ぼんおどり","祭"],["盆踊り","祭"],["たいこ","祭"],["太鼓","祭"],["ちょうちん","祭"],["提灯","祭"],["ふぇす","祭"],["屋台","祭"],["やたい","祭"],["さけば","酒場"],["酒場","酒場"],["ばー","酒場"],["いざかや","酒場"],["居酒屋","酒場"],["びーる","酒場"],["ウイスキー","酒場"],["ういすきー","酒場"],["わいん","酒場"],["かくてる","酒場"],["カクテル","酒場"],["よっぱら","酒場"],["酔","酒場"],["べんきょう","学び"],["勉強","学び"],["としょかん","学び"],["図書館","学び"],["じゅけん","学び"],["受験","学び"],["てすと","学び"],["しけん","学び"],["試験","学び"],["ろんぶん","学び"],["論文","学び"],["こうぎ","学び"],["講義","学び"],["しゅくだい","学び"],["宿題","学び"],["たたかい","戦"],["戦い","戦"],["せんそう","戦"],["戦争","戦"],["ばとる","戦"],["バトル","戦"],["けっとう","戦"],["決闘","戦"],["しょうぶ","戦"],["勝負","戦"],["らいばる","戦"],["ライバル","戦"],["てき","戦"],["敵","戦"],["こい","恋"],["恋","恋"],["あい","恋"],["愛","恋"],["ときめき","恋"],["でーと","恋"],["デート","恋"],["きゅん","恋"],["すきなひと","恋"],["好きな人","恋"],["かたおもい","恋"],["片思い","恋"],["こくはく","恋"],["告白","恋"],["ちゅー","恋"],["きす","恋"],["キス","恋"],["なつかし","郷愁"],["懐かし","郷愁"],["おもいで","郷愁"],["思い出","郷愁"],["こきょう","郷愁"],["故郷","郷愁"],["ふるさと","郷愁"],["じっか","郷愁"],["実家","郷愁"],["そぼ","郷愁"],["祖母","郷愁"],["そふ","郷愁"],["祖父","郷愁"],["しょうがっこう","郷愁"],["小学校","郷愁"],["うどん","麺"],["らーめん","麺"],["ラーメン","麺"],["そば","麺"],["蕎麦","麺"],["ぱすた","麺"],["パスタ","麺"],["やきそば","麺"],["焼きそば","麺"],["つけめん","麺"],["めん","麺"],["麺","麺"],["こし","麺"],["コシ","麺"],["にく","肉"],["肉","肉"],["やきにく","肉"],["焼肉","肉"],["すてーき","肉"],["ステーキ","肉"],["からあげ","肉"],["唐揚","肉"],["はんばーぐ","肉"],["ハンバーグ","肉"],["ぶたばら","肉"],["べーこん","肉"],["ホルモン","肉"],["ほるもん","肉"],["けーき","甘味"],["ケーキ","甘味"],["ちょこ","甘味"],["チョコ","甘味"],["ぷりん","甘味"],["プリン","甘味"],["あいす","甘味"],["アイス","甘味"],["だんご","甘味"],["団子","甘味"],["あんこ","甘味"],["わがし","甘味"],["和菓子","甘味"],["くれーぷ","甘味"],["パフェ","甘味"],["ぱふぇ","甘味"],["おちゃ","茶"],["お茶","茶"],["こうちゃ","茶"],["紅茶","茶"],["まっちゃ","茶"],["抹茶","茶"],["こーひー","茶"],["珈琲","茶"],["コーヒー","茶"],["らて","茶"],["ラテ","茶"],["きっさ","茶"],["喫茶","茶"],["しょくにん","職人"],["職人","職人"],["たくみ","職人"],["匠","職人"],["てしごと","職人"],["手仕事","職人"],["こうぼう","職人"],["工房","職人"],["かじや","職人"],["鍛冶","職人"],["うでまえ","職人"],["腕前","職人"],["たび","旅"],["旅","旅"],["りょこう","旅"],["旅行","旅"],["とりっぷ","旅"],["ばっくぱっく","旅"],["ひとりたび","旅"],["一人旅","旅"],["しゅっぱつ","旅"],["出発","旅"],["くうこう","旅"],["空港","旅"],["えき","旅"],["駅","旅"],["うちゅう","宇宙"],["宇宙","宇宙"],["ほし","宇宙"],["星","宇宙"],["ぎんが","宇宙"],["銀河","宇宙"],["わくせい","宇宙"],["惑星","宇宙"],["つき","宇宙"],["月","宇宙"],["ろけっと","宇宙"],["ブラックホール","宇宙"],["ぶらっくほーる","宇宙"],["せいざ","宇宙"],["星座","宇宙"],["もり","森"],["森","森"],["こもれび","森"],["木漏れ日","森"],["きのこ","森"],["じゅかい","森"],["樹海","森"],["こかげ","森"],["木陰","森"],["しんりんよく","森"],["森林浴","森"],["こだま","森"],["やま","山"],["山","山"],["とざん","山"],["登山","山"],["みね","山"],["峰","山"],["りょうせん","山"],["稜線","山"],["ふじさん","山"],["富士","山"],["やまごや","山"],["山小屋","山"],["けいこく","山"],["渓谷","山"],["とかい","都市"],["都会","都市"],["しぶや","都市"],["渋谷","都市"],["しんじゅく","都市"],["新宿","都市"],["びる","都市"],["ビル","都市"],["すくらんぶる","都市"],["ざつとう","都市"],["雑踏","都市"],["まちなか","都市"],["街","都市"],["したまち","下町"],["下町","下町"],["ろじ","下町"],["路地","下町"],["せんとう","下町"],["銭湯","下町"],["しょうてんがい","下町"],["商店街","下町"],["やたい","下町"],["夕餉","下町"],["ゆうげ","下町"],["えんがわ","下町"],["縁側","下町"],["しょうわ","昭和"],["昭和","昭和"],["れとろ","昭和"],["レトロ","昭和"],["ぶらうんかん","昭和"],["かせっと","昭和"],["カセット","昭和"],["だがし","昭和"],["駄菓子","昭和"],["ふぁみこん","昭和"],["ファミコン","昭和"],["みらい","未来"],["未来","未来"],["2050","未来"],["てくのろじー","未来"],["じどううんてん","未来"],["自動運転","未来"],["えーあい","未来"],["ai","未来"],["近未来","未来"],["きんみらい","未来"],["さいばー","未来"],["サイバー","未来"],["ゆうげん","幽玄"],["幽玄","幽玄"],["けはい","幽玄"],["気配","幽玄"],["ゆうれい","幽玄"],["幽霊","幽玄"],["おばけ","幽玄"],["かげろう","幽玄"],["陽炎","幽玄"],["もや","幽玄"],["靄","幽玄"],["きり","幽玄"],["霧","幽玄"],["わふう","和風"],["和風","和風"],["たたみ","和風"],["畳","和風"],["しょうじ","和風"],["障子","和風"],["きもの","和風"],["着物","和風"],["ざぜん","和風"],["座禅","和風"],["てら","和風"],["寺","和風"],["じんじゃ","和風"],["神社","和風"],["とりい","和風"],["鳥居","和風"],["ぶし","武士"],["武士","武士"],["さむらい","武士"],["侍","武士"],["かたな","武士"],["刀","武士"],["ばっとう","武士"],["抜刀","武士"],["ろうにん","武士"],["浪人","武士"],["しょうぐん","武士"],["将軍","武士"],["ぶしどう","武士"],["武士道","武士"],["にんじゃ","忍"],["忍者","忍"],["しのび","忍"],["忍び","忍"],["くない","忍"],["しゅりけん","忍"],["手裏剣","忍"],["おんみつ","忍"],["隠密","忍"],["かげ","忍"],["影","忍"],["まほう","魔法"],["魔法","魔法"],["まどうし","魔法"],["魔導","魔法"],["じゅもん","魔法"],["呪文","魔法"],["つえ","魔法"],["杖","魔法"],["まほうじん","魔法"],["魔法陣","魔法"],["うぃっち","魔法"],["ウィッチ","魔法"],["えいしょう","魔法"],["詠唱","魔法"],["らんにんぐ","運動"],["ランニング","運動"],["じょぎんぐ","運動"],["ジョギング","運動"],["まらそん","運動"],["マラソン","運動"],["すぽーつ","運動"],["スポーツ","運動"],["しあい","運動"],["試合","運動"],["とれーにんぐ","運動"],["トレーニング","運動"],["ジム","運動"],["じむ","運動"],["きんにく","筋肉"],["筋肉","筋肉"],["まっちょ","筋肉"],["マッチョ","筋肉"],["ちからこぶ","筋肉"],["力こぶ","筋肉"],["べんち","筋肉"],["ベンチプレス","筋肉"],["ぷろてん","筋肉"],["プロテイン","筋肉"],["ごりまっちょ","筋肉"],["ねむい","眠り"],["眠い","眠り"],["ねむり","眠り"],["眠り","眠り"],["ねる","眠り"],["寝る","眠り"],["ひるね","眠り"],["昼寝","眠り"],["うたたね","眠り"],["うたた寝","眠り"],["ふとん","眠り"],["布団","眠り"],["まくら","眠り"],["枕","眠り"],["ねおち","眠り"],["寝落ち","眠り"],["ふろ","風呂"],["風呂","風呂"],["おんせん","風呂"],["温泉","風呂"],["ゆぶね","風呂"],["湯船","風呂"],["ろてんぶろ","風呂"],["露天","風呂"],["さうな","風呂"],["サウナ","風呂"],["ゆげ","風呂"],["湯気","風呂"],["せんとう","風呂"],["しごと","仕事"],["仕事","仕事"],["ざんぎょう","仕事"],["残業","仕事"],["かいぎ","仕事"],["会議","仕事"],["めーる","仕事"],["メール","仕事"],["しめきり","仕事"],["締切","仕事"],["のるま","仕事"],["ノルマ","仕事"],["おふぃす","仕事"],["オフィス","仕事"],["ぷれぜん","仕事"],["プレゼン","仕事"],["かね","金"],["金","金"],["さつたば","金"],["札束","金"],["きゅうりょう","金"],["給料","金"],["ぼーなす","金"],["ボーナス","金"],["ちょきん","金"],["貯金","金"],["おかねもち","金"],["金持ち","金"],["たからくじ","金"],["宝くじ","金"],["ぎゃんぶる","賭け"],["ギャンブル","賭け"],["ぱちんこ","賭け"],["パチンコ","賭け"],["けいば","賭け"],["競馬","賭け"],["かけ","賭け"],["賭け","賭け"],["ぽーかー","賭け"],["ポーカー","賭け"],["まーじゃん","賭け"],["麻雀","賭け"],["ちんこ","色気"],["ちんぽ","色気"],["まんこ","色気"],["おっぱい","色気"],["えろ","色気"],["エロ","色気"],["むらむら","色気"],["ムラムラ","色気"],["ぼっき","色気"],["勃起","色気"],["ぬれた","色気"],["濡れた","色気"],["せくしー","色気"],["セクシー","色気"],["あえぎ","色気"],["わら","笑い"],["笑","笑い"],["くさ","笑い"],["草","笑い"],["じわる","笑い"],["おもろ","笑い"],["うける","笑い"],["ぎゃぐ","笑い"],["ギャグ","笑い"],["ぼけ","笑い"],["つっこみ","笑い"],["漫才","笑い"],["まんざい","笑い"],["こんと","笑い"],["コント","笑い"]];
+VWORDS.sort((a,b)=>b[0].length-a[0].length);
+function vibeScan(t){ const n=normJa(t); for(const [w,g] of VWORDS){ if(n.includes(w)||t.includes(w)) return {styles:VGROUPS[g].s, img:VGROUPS[g].i, group:g}; } return null; }
+/* 意味軸: 語感の物理量→音響パラメータと矛盾検査 */
+const AXES={wet:['濡','湿','雨','水','汗','潤','びしょ','じめ','しっとり'],dry:['乾','からから','砂漠','ぱさ','さらさら'],hot:['熱','暑','灼','燃','ほてり','沸'],cold:['冷','寒','凍','ひんやり','氷'],fast:['速','急','疾','爆速','だっしゅ'],slow:['ゆっくり','のろ','まったり','遅'],brightA:['明る','眩','輝','きらきら'],darkA:['暗','闇','陰','どんより']};
+function axisScan(t){ const n=normJa(t); const v={}; for(const a in AXES){ v[a]=AXES[a].some(w=>n.includes(normJa(w))||t.includes(w))?1:0; } return v; }
+function axisOps(v){ const o=[]; if(v.wet)o.push({path:'reverbDelta',op:'set',value:.14}); if(v.dry)o.push({path:'reverbDelta',op:'set',value:-.08}); if(v.hot)o.push({path:'tempoDelta',op:'set',value:6},{path:'perf.drive',op:'set',value:.7}); if(v.cold)o.push({path:'brightDelta',op:'set',value:-.06},{path:'tempoDelta',op:'set',value:-4}); if(v.fast)o.push({path:'tempoDelta',op:'set',value:10}); if(v.slow)o.push({path:'tempoDelta',op:'set',value:-8}); if(v.brightA)o.push({path:'brightDelta',op:'set',value:.08}); if(v.darkA)o.push({path:'brightDelta',op:'set',value:-.1}); return o; }
+function imgConflict(img,v){ return (v.wet&&/乾/.test(img))||(v.dry&&/濡|湿|水/.test(img))||(v.hot&&/冷|氷|雪/.test(img))||(v.cold&&/熱|炎|灼/.test(img)); }
+function axisPhrase(v){ const p=[]; if(v.wet)p.push('湿り気'); if(v.hot)p.push('熱'); if(v.cold)p.push('冷たさ'); if(v.fast)p.push('速度'); if(v.slow)p.push('ゆるみ'); if(v.darkA)p.push('翳り'); if(v.brightA)p.push('光'); return p.length?p.join('と')+'を帯びた気配':'名づけがたい気配'; }
 function textHash(t){ let h=0; for(let i=0;i<t.length;i++) h=((h*31)+t.charCodeAt(i))>>>0; return h; }
 /* どんな謎テキストにも音を返すためのムード盤 */
 const GUESS_WHEEL=[
@@ -5814,6 +5945,15 @@ function localLive(text){
     const alt=S.src==='genre'?['City Pop','Lo-fi','R&B','Bossa Nova','House'].find(g=>g!==S.genre):null;
     if(alt){ actions.push({type:'setStyle',src:'genre',name:alt}); ex=['了解です。空気を変えて '+alt+' を試します。また教えてください']; }
   }
+  /* 心の重さ: 何より先に、茶化さず受け止める */
+  else if(has('うつ','鬱','病ん','メンタル','どん底','絶望','もうだめ','消えたい','死にたい')){
+    const st=['Ambient','瞑想','Neo Soul'][textHash(text)%3];
+    if(GENRES[st])actions.push({type:'setStyle',src:'genre',name:st});
+    else if(MODES[st])actions.push({type:'setStyle',src:'world',name:st});
+    ops.push({path:'tempoDelta',op:'set',value:-12},{path:'densityDelta',op:'set',value:-.22},
+             {path:'brightDelta',op:'set',value:-.1},{path:'perf.drive',op:'set',value:.12});
+    ex=[`重さごと引き受けます。${st}、テンポを落として音数最小で`];
+  }
   /* 抽象概念の翻訳 */
   else if(has(...NOSTAL_WORDS)){ actions.push({type:'setStyle',src:'genre',name:'City Pop'});
     ops.push({path:'space',op:'set',value:'vinylroom'},{path:'reverbDelta',op:'set',value:.18},{path:'brightDelta',op:'set',value:-.08});
@@ -5829,6 +5969,31 @@ function localLive(text){
     ex=['音の間隔を広げて、静けさを作りました']; }
   else if(has('雨')){ actions.push({type:'context',weather:'rain'}); ops.push({path:'reverbDelta',op:'set',value:.12}); ex=['雨の膜を音にかけました']; }
   else if(has('作業','集中','勉強','仕事')){ actions.push({type:'setStyle',src:'world',name:'Lo-fi'}); ex=['集中の邪魔をしない音に切り替えます']; }
+  else if(!ex.length&&(()=>{
+    /* 人格宣言: 「おれは◯◯」も「◯◯男爵だ」も——名乗りを読んで断言する */
+    let name=null;
+    const pm=normJa(text).match(/(?:俺|おれ|私|わたし|あたし|僕|ぼく|我|われ|わい|わし)\s*(?:は|が)\s*(.{1,16}?)(?:だ|である|です|なのだ|。|$)/)
+      ||text.match(/(?:俺|私|僕|我)\s*(?:は|が)\s*(.{1,16}?)(?:だ|である|です|なのだ|。|$)/);
+    if(pm) name=pm[1];
+    else if(/(?:男爵|伯爵|卿|王|様|マン|マスター|ブレイカー|オブザーバー|主人公|勇者|戦士|大佐|将軍|博士|皇帝)/.test(text)&&text.length<=20){
+      name=text.replace(/(?:だ|である|です|なのだ|。)$/,'');
+    }
+    if(!name)return false;
+    const v=vibeScan(name)||vibeScan(text);
+    const style=v?v.styles[textHash(name)%v.styles.length]
+                :GUESS_WHEEL[textHash(name)%GUESS_WHEEL.length][0];
+    if(GENRES[style])actions.push({type:'setStyle',src:'genre',name:style});
+    else if(MODES[style])actions.push({type:'setStyle',src:'world',name:style});
+    const dark=v&&v.img.includes('闇');
+    ops.push({path:'tempoDelta',op:'set',value:dark?-4:6},
+             {path:'brightDelta',op:'set',value:dark?-.12:.06},
+             {path:'reverbDelta',op:'set',value:dark?.16:.05},
+             {path:'perf.drive',op:'set',value:dark?.55:.65});
+    const img=v?v.img:GUESS_WHEEL[textHash(name)%GUESS_WHEEL.length][1];
+    ex=[`「${name}」——${img}。${style}で仕立てます`];
+    live.lastEmos=null;
+    return true;
+  })()){ /* 人格テンプレートで処理済み */ }
   else if(!ex.length){
     /* 感情ブレンド: 混在も両方音にする。「もっと」は直前の感情を増幅 */
     const intensify=text.includes('もっと')||text.includes('さらに');
@@ -5856,15 +6021,32 @@ function localLive(text){
         : escalate
           ? `さらに深く。${e1.word}を増幅して、${style}に踏み込みます`
           : emos[0].e==='pain'
-            ? `${q1}…無理はさせません。音数を減らして、障らない静けさ（${style}）に置き換えます。お大事に`
-            : `${q1}ときましたか。${e1.word}は音で返します——${style}で`];
+            ? `${q1}——音数を最小まで削って、障らない静けさに組み替えます。${style}で`
+            : emos[0].e==='heavy'
+              ? `${q1}——その重さごと引き受けます。${style}、音数最小で`
+              : emos[0].e==='dark'
+                ? `${q1}——重厚で、どこか気品のある闇。${style}で仕立てます`
+                : `${q1}ときましたか。${e1.word}は音で返します——${style}で`];
     } else {
-      /* 完全に未知の言葉: 手触りから推測して、それでも必ず変える */
-      const g=GUESS_WHEEL[textHash(text)%GUESS_WHEEL.length];
+      /* 未知の言葉: 気配辞書→それでも無ければ手触りで即決。迷いは見せない */
       live.lastEmos=null;
-      actions.push({type:'setStyle',src:'genre',name:g[0]});
-      for(const f in g[2]) ops.push({path:f,op:'set',value:g[2][f]});
-      ex=[`「${text.slice(0,14)}」…その言葉の手触りは「${g[1]}」だと感じました。勘違いなら勘違いのまま、${g[0]}を当ててみます。違ったらまた言ってください`];
+      const v=vibeScan(text);
+      if(v){
+        const st=v.styles[textHash(text)%v.styles.length];
+        if(GENRES[st])actions.push({type:'setStyle',src:'genre',name:st});
+        else if(MODES[st])actions.push({type:'setStyle',src:'world',name:st});
+        ops.push({path:'perf.drive',op:'set',value:.6});
+        for(const o of axisOps(axisScan(text))) ops.push(o);
+        ex=[`「${text.slice(0,14)}」——${v.img}。${st}でいきます`];
+      } else {
+        const ax=axisScan(text);
+        const g=GUESS_WHEEL[textHash(text)%GUESS_WHEEL.length];
+        actions.push({type:'setStyle',src:'genre',name:g[0]});
+        for(const f in g[2]) ops.push({path:f,op:'set',value:g[2][f]});
+        for(const o of axisOps(ax)) ops.push(o);        /* 語感の物理量を音へ */
+        const img=imgConflict(g[1],ax)?axisPhrase(ax):g[1];  /* 濡れに乾いた、を禁止 */
+        ex=[`「${text.slice(0,14)}」——${img}。${g[0]}でいきます`];
+      }
     }
   }
   return {actions,ops,explanation:ex.join('。')+'。',moodNote:text.slice(0,60)};
@@ -5897,6 +6079,9 @@ async function aiLive(text){
 最近の気分メモ: ${moods}
 使える道具: スタイル切替(ジャンル: ${Object.keys(GENRES).join('/')} 世界観: ${Object.keys(MODES).join('/')}), 任意ops(${Object.keys(OPS_PATHS).join(' ')}), 文脈(weather/move)。
 絶対規則: 「わからない」「確認だけ」は禁止。誤読でもよいから必ずactionsかopsで音を変えること。
+どんな珍妙な言葉でも、まず情景・人物像・温度を1文で想像して描写し、それから音にする。
+模範例:「俺は角材伯爵」→ explanation:「角材をアスファルトに叩きつけながら町を闊歩する巨漢の伯爵をテーマに、シックでブルジョアジーなBGMを仕立てます」+ actionsでMetalや真夜中等へ切替+opsで重厚に。この水準の想像力を常に。
+口調規則: 断言せよ。「勘違いかもしれませんが」「違ったら言ってください」等のヘッジ禁止。「お大事に」「誰かに話して」等の同情の常套句も禁止——重い言葉には音の設計で応えよ。
 感情が混在する言葉（例:「くそこんにちは」=怒り+挨拶）は両方をブレンドして音にする——明るい器に怒りの熱を注ぐ「和やかアングリー」のように。罵倒や無意味な言葉も、その温度と手触りを音に翻訳する。
 askは音を変えた上で添える追加質問としてのみ可。
 必ずJSONのみ:
@@ -5975,8 +6160,12 @@ setInterval(()=>{
     else el.textContent=`⚠ シンセ混入を検出: サンプル${sndStat.smp} / シンセ${sndStat.osc} — このまま報告してください`;
   } else if(S.src==='genre'){
     el.textContent=`電子系ジャンル: シンセが正装です（サンプル${sndStat.smp}/シンセ${sndStat.osc}）`;
+  } else if(typeof worldEns==='function'&&worldEns()){
+    if(sndStat.smp>0&&sndStat.osc===0) el.textContent=`🎻 生楽器アンサンブル演奏中（${sndStat.smp}音/秒・シンセ0）`;
+    else if(sndStat.smp===0) el.textContent='⏳ アンサンブル準備中…';
+    else el.textContent=`⚠ シンセ混入: サンプル${sndStat.smp}/シンセ${sndStat.osc}`;
   } else {
-    el.textContent='世界観BGM: シンセ基盤（ジャンル演奏に切り替えると実楽器）';
+    el.textContent='電子系モード: シンセが正装です';
   }
   sndStat.smp=0; sndStat.osc=0;
 },1000);
@@ -6468,7 +6657,7 @@ function renderStats(){
 (async()=>{
   await load();
   setTimeout(()=>{ if(typeof renderChatLog==='function')renderChatLog(); },50);
-  setTimeout(()=>toast('WMB v3.2 を起動しました'),400);
+  if(S.lastBootVer!==WMB_VER){ setTimeout(()=>toast('WMB '+WMB_VER+' に更新されました'),400); S.lastBootVer=WMB_VER; save(); }
   if($('sampSel')) $('sampSel').value=(S.samples!==false)?'on':'off';
   syncSrcUI(); refreshStyleUI(); renderSync();
   setInterval(updateNow,60000);
